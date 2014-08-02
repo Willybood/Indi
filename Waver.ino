@@ -16,7 +16,7 @@ uint32_t timer;
 boolean connected;
 
 void setup() {
-  pinMode( 7, OUTPUT); digitalWrite( 7, HIGH);
+  //pinMode( 7, OUTPUT); digitalWrite( 7, HIGH);
   Serial.begin(115200);
   while (!Serial); // Wait for serial port to connect - used on Leonardo, Teensy and other boards with built-in USB CDC serial connection
   if (Usb.Init() == -1) {

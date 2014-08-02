@@ -59,6 +59,7 @@ public class main extends ActionBarActivity {
                     else {
                         if (D)
                             Log.d(TAG, "Permission denied for accessory " + accessory);
+                        printDebugMessage("Permission denied for accessory " + accessory);
                     }
                     mPermissionRequestPending = false;
                 }
@@ -110,6 +111,8 @@ public class main extends ActionBarActivity {
             setConnectionStatus(false);
             if (D)
                 Log.d(TAG, "mAccessory is null");
+            printDebugMessage("mAccessory is null");
+
         }
     }
 
@@ -154,10 +157,12 @@ public class main extends ActionBarActivity {
 
             if (D)
                 Log.d(TAG, "Accessory opened");
+            printDebugMessage("Accessory opened");
         } else {
             setConnectionStatus(false);
             if (D)
                 Log.d(TAG, "Accessory open failed");
+            printDebugMessage("Accessory open failed");
         }
     }
 
@@ -264,5 +269,11 @@ public class main extends ActionBarActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public void printDebugMessage(String output) {
+        TextView mDebugOutput;
+        mDebugOutput = (TextView) findViewById(R.id.debugOutput);
+        mDebugOutput.setText(output);
     }
 }
