@@ -2,6 +2,7 @@ package com.DorsetEggs.waver;
 
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -13,7 +14,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.view.View;
@@ -30,12 +30,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-
 public class main extends ActionBarActivity {
-
     public static final boolean D = BuildConfig.DEBUG; // This is automatically set when building
-    private static final String TAG = "ArduinoBlinkLEDActivity"; // TAG is used to debug in Android logcat console
-    private static final String ACTION_USB_PERMISSION = "com.tkjelectronics.arduino.blink.led.USB_PERMISSION";
+    private static final String TAG = "WaverActivity"; // TAG is used to debug in Android logcat console
+    private static final String ACTION_USB_PERMISSION = "com.DorsetEggs.arduino.waver.robot.USB_PERMISSION";
 
     UsbAccessory mAccessory;
     ParcelFileDescriptor mFileDescriptor;
@@ -45,10 +43,11 @@ public class main extends ActionBarActivity {
     private PendingIntent mPermissionIntent;
     private boolean mPermissionRequestPending;
     TextView connectionStatus;
-    ConnectedThread mConnectedThread;
 
+    ConnectedThread mConnectedThread;
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
         @Override
+        //Usb broadcast event
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (ACTION_USB_PERMISSION.equals(action)) {
@@ -71,6 +70,25 @@ public class main extends ActionBarActivity {
         }
     };
 
+    private final BroadcastReceiver mCallReceiver = new BroadcastReceiver() {
+        @Override
+        //Call broadcast event
+        public void onReceive(Context context, Intent intent) {
+            //Call broadcast event
+            if (intent.getStringExtra(TelephonyManager.EXTRA_STATE).equals(TelephonyManager.EXTRA_STATE_RINGING)) {
+                // This code will execute when the phone has an incoming call
+                // get the phone number
+                String incomingNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
+                printCallReceivedMessage("Call from:" + incomingNumber);
+            } else if (intent.getStringExtra(TelephonyManager.EXTRA_STATE).equals(
+                    TelephonyManager.EXTRA_STATE_IDLE)
+                    || intent.getStringExtra(TelephonyManager.EXTRA_STATE).equals(
+                    TelephonyManager.EXTRA_STATE_OFFHOOK)) {
+                printCallDroppedMessage("Detected call hangup event");
+            }
+        }
+    };
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,9 +97,13 @@ public class main extends ActionBarActivity {
 
         mUsbManager = UsbManager.getInstance(this);
         mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
-        IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
-        filter.addAction(UsbManager.ACTION_USB_ACCESSORY_DETACHED);
-        registerReceiver(mUsbReceiver, filter);
+
+        IntentFilter usbFilter = new IntentFilter(ACTION_USB_PERMISSION);
+        usbFilter.addAction(UsbManager.ACTION_USB_ACCESSORY_DETACHED);
+        registerReceiver(mUsbReceiver, usbFilter);
+
+        IntentFilter callFilter = new IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
+        registerReceiver(mCallReceiver, callFilter);
     }
 
     @Override
@@ -140,6 +162,7 @@ public class main extends ActionBarActivity {
         super.onDestroy();
         closeAccessory();
         unregisterReceiver(mUsbReceiver);
+        unregisterReceiver(mCallReceiver);
     }
 
     private void openAccessory(UsbAccessory accessory) {
@@ -275,5 +298,17 @@ public class main extends ActionBarActivity {
         TextView mDebugOutput;
         mDebugOutput = (TextView) findViewById(R.id.debugOutput);
         mDebugOutput.setText(output);
+    }
+
+    public void printCallDroppedMessage(String output) {
+        TextView mCallDroppedInfo;
+        mCallDroppedInfo = (TextView) findViewById(R.id.callDroppedInfo);
+        mCallDroppedInfo.setText(output);
+    }
+
+    public void printCallReceivedMessage(String output) {
+        TextView mCallRecievedInfo;
+        mCallRecievedInfo = (TextView) findViewById(R.id.callRecievedInfo);
+        mCallRecievedInfo.setText(output);
     }
 }
