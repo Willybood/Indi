@@ -16,15 +16,6 @@
         android:layout_centerHorizontal="true"
         android:id="@+id/textView" />
 
-    <ToggleButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="New ToggleButton"
-        android:id="@+id/toggleButton"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:onClick="blinkLED" />
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -39,10 +30,10 @@
         android:layout_height="wrap_content"
         android:text="No debug output"
         android:id="@+id/debugOutput"
-        android:layout_below="@+id/toggleButton"
         android:layout_alignRight="@+id/textView"
         android:layout_alignEnd="@+id/textView"
-        android:layout_marginTop="44dp" />
+        android:layout_marginTop="44dp"
+        android:layout_centerVertical="true" />
 
     <TextView
         android:layout_width="wrap_content"
