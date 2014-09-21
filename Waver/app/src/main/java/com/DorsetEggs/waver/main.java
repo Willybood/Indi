@@ -21,6 +21,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import java.util.Vector;
+import android.os.Handler;
 
 import com.android.future.usb.UsbAccessory;
 import com.android.future.usb.UsbManager;
@@ -37,6 +38,7 @@ import java.io.ObjectOutputStream;
 public class main extends ActionBarActivity {
     //TODO: The following definitions are shared with the device. It may be better to have this established with some initialization communications.
     public enum ServoTypes {DLARM, ULARM, DRARM, URARM, NUMOFSERVOS}
+    public enum AnimationState {PAUSED, PLAYING}
     private static final int MAX_SERVO_ROTATION = 180;
 
     class KeyframePacket {
@@ -63,23 +65,23 @@ public class main extends ActionBarActivity {
     private boolean mPermissionRequestPending;
     TextView connectionStatus;
     boolean callOngoing;
+    AnimationState animationState;
 
     ConnectedThread mConnectedThread;
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
         @Override
         //Usb broadcast event
         public void onReceive(Context context, Intent intent) {
-            instantiateAnimation();
             String action = intent.getAction();
             if (ACTION_USB_PERMISSION.equals(action)) {
                 synchronized (this) {
                     UsbAccessory accessory = UsbManager.getAccessory(intent);
-                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false))
+                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         openAccessory(accessory);
+                    }
                     else {
                         if (D)
                             Log.d(TAG, "Permission denied for accessory " + accessory);
-                        printDebugMessage("Permission denied for accessory " + accessory);
                     }
                     mPermissionRequestPending = false;
                 }
@@ -93,36 +95,29 @@ public class main extends ActionBarActivity {
 
     private void sendKeyframe(byte servo, int keyframe)
     {
+        printDebugMessage("Entering function" + Thread.currentThread().getStackTrace());
         if (mOutputStream != null) {
             try {
-                servoAnimations.get(servo).get(keyframe);
-                mOutputStream.write(toByteArray(servoAnimations.get(servo).get(keyframe)));
+                printDebugMessage("Keyframe sent -/nServo = " + servo + "/nkeyframe = " + keyframe);
+                byte[] byteArray = toByteArray(servoAnimations.get(servo).get(keyframe));
+                mOutputStream.write(byteArray);
+                Log.e(TAG, "as " + byteArray.toString());
             } catch (IOException e) {
-                if (D)
+                if (D) {
                     Log.e(TAG, "write failed", e);
+                    printDebugMessage("write failed");
+                }
             }
         }
     }
 
-    public static byte[] toByteArray(Object obj) throws IOException {
-        byte[] bytes = null;
-        ByteArrayOutputStream bos = null;
-        ObjectOutputStream oos = null;
-        try {
-            bos = new ByteArrayOutputStream();
-            oos = new ObjectOutputStream(bos);
-            oos.writeObject(obj);
-            oos.flush();
-            bytes = bos.toByteArray();
-        } finally {
-            if (oos != null) {
-                oos.close();
-            }
-            if (bos != null) {
-                bos.close();
-            }
-        }
-        return bytes;
+    public static byte[] toByteArray(KeyframePacket obj) throws IOException {
+        ByteBuffer bytes = ByteBuffer.allocate(4);
+        bytes.order(ByteOrder.LITTLE_ENDIAN);
+        bytes.put(obj.servoToApplyTo);
+        bytes.put(obj.degreesToReach);
+        bytes.putShort(obj.timeToPosition);
+        return bytes.array();
     }
 
     private void animationCompleteReceived(byte servo)
@@ -134,10 +129,10 @@ public class main extends ActionBarActivity {
                 servoAnimationInPlay[servo] = 0;
             }
             sendKeyframe(servo, servoAnimationInPlay[servo]);
+            printDebugMessage("Animation complete recieved");
         }
     }
 
-    // TODO: Test the call receiver functionality fully.
     private final BroadcastReceiver mCallReceiver = new BroadcastReceiver() {
         @Override
         //Call broadcast event
@@ -149,6 +144,7 @@ public class main extends ActionBarActivity {
                 String incomingNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
                 printCallReceivedMessage("Call from:" + incomingNumber);
                 callOngoing = true;
+                animationState = AnimationState.PLAYING;
                 for(byte i = 0; i < ServoTypes.NUMOFSERVOS.ordinal(); ++i)
                 {
                     sendKeyframe(i, 0);
@@ -159,6 +155,7 @@ public class main extends ActionBarActivity {
                     || intent.getStringExtra(TelephonyManager.EXTRA_STATE).equals(
                     TelephonyManager.EXTRA_STATE_OFFHOOK)) {
                 printCallDroppedMessage("Detected call hangup event");
+                animationState = AnimationState.PAUSED;
                 callOngoing = false;
                 resetServoAnimations();
             }
@@ -168,9 +165,12 @@ public class main extends ActionBarActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         callOngoing = false;
+        animationState = AnimationState.PAUSED;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         connectionStatus = (TextView) findViewById(R.id.connectionStatus);
+
+        instantiateAnimation();
 
         mUsbManager = UsbManager.getInstance(this);
         mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
@@ -210,8 +210,6 @@ public class main extends ActionBarActivity {
             setConnectionStatus(false);
             if (D)
                 Log.d(TAG, "mAccessory is null");
-            printDebugMessage("mAccessory is null");
-
         }
     }
 
@@ -257,17 +255,21 @@ public class main extends ActionBarActivity {
 
             if (D)
                 Log.d(TAG, "Accessory opened");
-            printDebugMessage("Accessory opened");
         } else {
             setConnectionStatus(false);
             if (D)
                 Log.d(TAG, "Accessory open failed");
-            printDebugMessage("Accessory open failed");
         }
     }
 
     private void setConnectionStatus(boolean connected) {
         connectionStatus.setText(connected ? "Connected" : "Disconnected");
+        //exit when disconnected
+        if(connected == false)
+        {
+            Log.d(TAG, "Exiting due to disconnection");
+            //finish();
+        }
     }
 
     private void closeAccessory() {
@@ -324,8 +326,10 @@ public class main extends ActionBarActivity {
                         activity.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                byte servo = ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN).get();
-                                animationCompleteReceived(servo);
+                                if(AnimationState.PLAYING == animationState) {
+                                    byte servo = ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN).get();
+                                    animationCompleteReceived(servo);
+                                }
                             }
                         });
                     }
