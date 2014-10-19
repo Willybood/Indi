@@ -1,6 +1,26 @@
+/**
+ *
+ * Copyright (c) 2014 Billy Wood
+ * This file is part of Indi.
+ * 
+ * Indi is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Indi is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Indi.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 #include <adk.h>
 #include <Servo.h>
-#include <SimpleList.h> // GPLv3
+//#include <SimpleList.h> // GPLv3
 #include <avr/wdt.h> // Watchdog library
 
 USB Usb;
@@ -13,7 +33,7 @@ ADK adk(&Usb, "DorsetEggs", // Manufacturer Name
 boolean connected;
 enum ServoTypes {DLARM = 0, ULARM, DRARM, URARM, NUMOFSERVOS};
 Servo servos[NUMOFSERVOS];
-#define SEVO_PIN_DEFINITION {/*DLARM = */3, /*ULARM = */5, /*DRARM = */6, /*URARM = */11}
+#define SEVO_PIN_DEFINITION {/*DLARM = */4, /*ULARM = */5, /*DRARM = */6, /*URARM = */7}
 #define MAX_SERVO_ROTATION 180
 uint32_t start = 0;
 uint32_t finished = 0;
@@ -25,6 +45,11 @@ struct KeyFrame {
   //We can up it later if we feel like it by upping these variables to uint32_t
   uint32_t timeToPosition;//Time in micro seconds to reach this point
   uint32_t timeSpent;//Time spent so far reaching this point (in micro seconds)
+  bool initialised;
+  
+  KeyFrame() : initialised(false)
+  {
+  }
 };
 struct KeyframePacket {
   uint8_t servoToApplyTo;
@@ -32,7 +57,8 @@ struct KeyframePacket {
   uint8_t degreesToReach;
   uint16_t timeToPosition;
 };
-SimpleList <KeyFrame> servoAnimations[NUMOFSERVOS];
+//SimpleList <KeyFrame> servoAnimations[NUMOFSERVOS];
+KeyFrame servoAnimations[NUMOFSERVOS];
 
 void setup() {
   wdt_enable(WDTO_2S); // Initialise the watchdog
@@ -43,6 +69,7 @@ void setup() {
     Serial.print("\r\nOSCOKIRQ failed to assert");
     while (1); // halt
   }
+  Serial.print(F("\r\nRestart"));
 }
 
 void loop() {
@@ -88,7 +115,12 @@ void recieveAnimationCommand()
       frame.degreesToReach = packet.degreesToReach;
       frame.timeToPosition = (uint32_t)(packet.timeToPosition) * 1000;
       frame.timeSpent = 0;
-      servoAnimations[packet.servoToApplyTo].push_front(frame);
+      frame.initialised = true;
+      servoAnimations[packet.servoToApplyTo] = frame;
+      Serial.print(F("\r\nAnimation command processed - Servo "));
+      Serial.print(packet.servoToApplyTo);
+      Serial.print(F(" - Time to position == "));
+      Serial.print(packet.timeToPosition);
     }
     else
     {
@@ -111,6 +143,8 @@ void sendConfirmation(uint8_t servo)
     Serial.print(rcode, HEX);
   } else if (rcode != hrNAK) {
     //Data sent
+    Serial.print(F("\r\nConfirmation sent - Servo "));
+    Serial.print(servo);
   }
 }
 
@@ -120,8 +154,6 @@ void setupServos()
   for(int i = 0; i < NUMOFSERVOS; ++i)
   {
     servos[i].attach(servoPins[i]);
-    //Make sure the servos are in the default position
-    servos[i].write(0);
   }
 }
 
@@ -131,22 +163,35 @@ void processServos()
   start = micros();
   for(int i = 0; i < NUMOFSERVOS; ++i)
   {
-    if(!servoAnimations[i].empty())
+    if(true == servoAnimations[i].initialised)
     {
-      SimpleList<KeyFrame>::iterator keyFrameToUse = servoAnimations[i].end() - 1;
-      
-      (*keyFrameToUse).timeSpent += timeBetweenProcessing;
-      if((*keyFrameToUse).timeSpent > (*keyFrameToUse).timeToPosition)
+      KeyFrame* keyFrameToUse = &(servoAnimations[i]);
+
+      keyFrameToUse->timeSpent += timeBetweenProcessing;
+      if(keyFrameToUse->timeSpent > keyFrameToUse->timeToPosition)
       {
-        (*keyFrameToUse).timeSpent = (*keyFrameToUse).timeToPosition;
+        keyFrameToUse->timeSpent = keyFrameToUse->timeToPosition;
       }
       
-      int32_t degreeToUse = map((*keyFrameToUse).timeSpent, 0, (*keyFrameToUse).timeToPosition, 0, MAX_SERVO_ROTATION);
+      int32_t degreeToUse = map(keyFrameToUse->timeSpent, 0, keyFrameToUse->timeToPosition, 0, MAX_SERVO_ROTATION);
       servos[i].write(degreeToUse);
-      if((*keyFrameToUse).timeSpent == (*keyFrameToUse).timeToPosition)
+      if(keyFrameToUse->timeSpent == keyFrameToUse->timeToPosition)
       {
-        servoAnimations[i].pop_back();
+        Serial.print(F("\r\nAnimation complete - Servo "));
+        Serial.print(i);
+        servoAnimations[i].initialised = false;
         sendConfirmation(i);
+      }
+      else
+      {
+        Serial.print(F("\r\nProcessing animation frame - Servo "));
+        Serial.print(i);
+        Serial.print(F(" - timeSpent == "));
+        Serial.print(keyFrameToUse->timeSpent);
+        Serial.print(F(" - timeToPosition == "));
+        Serial.print(keyFrameToUse->timeToPosition);
+        Serial.print(F(" - timeBetweenProcessing == "));
+        Serial.print(timeBetweenProcessing);
       }
     }
   }
