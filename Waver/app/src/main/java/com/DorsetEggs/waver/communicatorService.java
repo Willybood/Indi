@@ -27,11 +27,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.ParcelFileDescriptor;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.future.usb.UsbAccessory;
 import com.android.future.usb.UsbManager;
@@ -83,6 +86,7 @@ public class communicatorService extends IntentService {
 
     ConnectedThread mConnectedThread;
 
+    SQLiteDatabase db;
 
     /**
      * A constructor is required, and must call the super IntentService(String)
@@ -136,6 +140,8 @@ public class communicatorService extends IntentService {
                     active = true;
                     launchNotification(mId, "Indi connected");
                     resetMotors();
+                    //Initialise the database
+                    SQLiteDatabase db = globals.dbHelper.getWritableDatabase();
                 }
                 else {
                     setConnectionStatus(false);
@@ -205,7 +211,7 @@ public class communicatorService extends IntentService {
             defaultServoPositions.add(keyframe);
         }
         //Load the default waving animation
-        for(byte i = 0; i < ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
+        /*for(byte i = 0; i < ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
             Vector<KeyframePacket> servoAnimation = new Vector<KeyframePacket>();
             KeyframePacket keyframe1 = new KeyframePacket();
             KeyframePacket keyframe2 = new KeyframePacket();
@@ -219,7 +225,7 @@ public class communicatorService extends IntentService {
             keyframe2.timeToPosition = 1000;
             servoAnimation.add(keyframe2);
             servoAnimations.add(i, servoAnimation);
-        }
+        }*/
         resetServoAnimations();
     }
 
@@ -416,6 +422,7 @@ public class communicatorService extends IntentService {
                 String incomingNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
                 Log.e(TAG, "Call from:" + incomingNumber);
                 callOngoing = true;
+                loadAnimation(globals.animOptions.CALL_RECIEVED.ordinal());
                 for(byte i = 0; i < ServoTypes.NUMOFSERVOS.ordinal(); ++i)
                 {
                     sendKeyframe(i, 0);
@@ -431,4 +438,74 @@ public class communicatorService extends IntentService {
             }
         }
     };
+
+    private void loadAnimation(int animOption)
+    {
+        //First, load the animation to use
+        String[] projectionAnimToActions = {
+                globals.AnimToActions.COLUMN_NAME_ACTION,
+                globals.AnimToActions.COLUMN_NAME_ANIMATION,
+        };
+        String sortOrderAnimToActions =
+                globals.AnimToActions.COLUMN_NAME_ACTION + " DESC";
+        Cursor cAnimToActions = db.query(
+                globals.AnimToActions.TABLE_NAME,                              // The table to query
+                projectionAnimToActions,                                       // The columns to return
+                globals.AnimToActions.COLUMN_NAME_ACTION + " = " + animOption, // The columns for the WHERE clause
+                null,                                                          // The values for the WHERE clause
+                null,                                                          // don't group the rows
+                null,                                                          // don't filter by row groups
+                sortOrderAnimToActions                                         // The sort order
+        );
+
+        if(cAnimToActions.getColumnCount() == 0)
+        {
+            Toast.makeText(this, "Animation not found for action", Toast.LENGTH_LONG).show();
+        }
+
+        //Next load the selected animation
+        String[] projectionAnimations = {
+                globals.Animations.COLUMN_NAME_POSITION,
+                globals.Animations.COLUMN_NAME_TIME,
+        };
+        String sortOrderAnimations =
+                globals.Animations.COLUMN_NAME_KEYFRAME + " DESC";
+
+        //Finally place the animation into the array for later processing
+        for(Integer i = 0; i < ServoTypes.NUMOFSERVOS.ordinal(); ++i)
+        {
+            String whereClause = globals.Animations.COLUMN_NAME_TITLE + " = " + cAnimToActions.getString(cAnimToActions.getColumnIndex(globals.AnimToActions.COLUMN_NAME_ANIMATION)) +
+                    " AND " + globals.Animations.COLUMN_NAME_MOTOR + " = " + i.toString();
+
+            Cursor cAnimations = db.query(
+                    globals.Animations.TABLE_NAME, // The table to query
+                    projectionAnimations,          // The columns to return
+                    whereClause,                   // The columns for the WHERE clause
+                    null,                          // The values for the WHERE clause
+                    null,                          // don't group the rows
+                    null,                          // don't filter by row groups
+                    sortOrderAnimations            // The sort order
+            );
+            if(cAnimations.getColumnCount() == 0)
+            {
+                Toast.makeText(this, "Animation not found", Toast.LENGTH_LONG).show();
+            }
+
+            if (cAnimations != null ) {
+                if  (cAnimations.moveToFirst()) {
+                    int positionColumn = cAnimations.getColumnIndex(globals.Animations.COLUMN_NAME_POSITION);
+                    int timeColumn = cAnimations.getColumnIndex(globals.Animations.COLUMN_NAME_TIME);
+                    Vector<KeyframePacket> servoAnimation = new Vector<KeyframePacket>();
+                    do {
+                        KeyframePacket keyframe = new KeyframePacket();
+                        keyframe.servoToApplyTo = i.byteValue();
+                        keyframe.degreesToReach = (byte)cAnimations.getInt(positionColumn);
+                        keyframe.timeToPosition = (short)cAnimations.getInt(timeColumn);
+                        servoAnimation.add(keyframe);
+                    }while (cAnimations.moveToNext());
+                    servoAnimations.add(i, servoAnimation);
+                }
+            }
+        }
+    }
 }

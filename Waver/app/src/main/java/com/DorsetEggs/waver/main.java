@@ -20,25 +20,29 @@
 
 package com.DorsetEggs.waver;
 
+import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.os.Bundle;
 import android.content.Intent;
-import android.support.v7.app.ActionBarActivity;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class main extends ActionBarActivity {
-
-    //TextView connectionStatus;
-
+public class main extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        Intent intent = new Intent(this, communicatorService.class);
-        this.startService(intent);
+        // Start the SQL service
+        Intent SQLIntent = new Intent(this, SQLService.class);
+        this.startService(SQLIntent);
+
+        // Start the communicator service
+        Intent commIntent = new Intent(this, communicatorService.class);
+        this.startService(commIntent);
     }
 
     @Override
@@ -52,8 +56,30 @@ public class main extends ActionBarActivity {
 
             @Override
             public void run() {
-                finish();
+                checkUSB();
             }
         }, 3000);
+    }
+
+    private void checkUSB()
+    {
+        // If connected, end the app
+        // Otherwise, goto the menu
+        if(!isMyServiceRunning(communicatorService.class)) {
+            Intent intent = new Intent(this, menu.class);
+            startActivity(intent);
+        }
+        finish();
+    }
+
+    // Taken from 'http://stackoverflow.com/questions/600207/how-to-check-if-a-service-is-running-in-android'
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.equals(service.service)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

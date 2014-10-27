@@ -11,9 +11,10 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Waver Online"
-        android:id="@+id/debugOutput"
-        android:layout_marginTop="44dp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Indi Online"
+        android:id="@+id/textView"
+        android:layout_marginRight="34dp"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true" />
 
