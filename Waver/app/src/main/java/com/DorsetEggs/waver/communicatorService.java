@@ -210,7 +210,7 @@ public class communicatorService extends IntentService {
             keyframe.timeToPosition = 1000;
             defaultServoPositions.add(keyframe);
         }
-        //Load the default waving animation
+        //Load the default waving animation, kept here for debugging purposes
         /*for(byte i = 0; i < ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
             Vector<KeyframePacket> servoAnimation = new Vector<KeyframePacket>();
             KeyframePacket keyframe1 = new KeyframePacket();
@@ -289,7 +289,6 @@ public class communicatorService extends IntentService {
     }
 
     private void setConnectionStatus(boolean connected) {
-        //connectionStatus.setText(connected ? "Connected" : "Disconnected");
         //exit when disconnected
         if(connected == false)
         {
@@ -389,7 +388,6 @@ public class communicatorService extends IntentService {
         boolean running;
 
         ConnectedThread() {
-            //mTextView = (TextView) findViewById(R.id.textView);
             running = true;
         }
 

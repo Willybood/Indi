@@ -37,6 +37,7 @@ public class menu extends ListActivity {
 
     private enum menuOptions {
         SET_ANIMATIONS,
+        SPECIAL_THANKS,
         CREATE_ANIMATION,
         DELETE_ANIMATIONS,
         NUM_OF_OPTIONS
@@ -44,6 +45,7 @@ public class menu extends ListActivity {
     final String [] menuValues = new String[] {
             // todo: Put this back when we have a proper editor for animations
             "Set animations",
+            "Special thanks"
             //"Create animation",
             //"Delete animations"
     };
@@ -60,6 +62,11 @@ public class menu extends ListActivity {
         if(menuOptions.CREATE_ANIMATION.ordinal() == position)
         {
             Intent intent = new Intent(this, animationEditor.class);
+            startActivity(intent);
+        }
+        else if(menuOptions.SPECIAL_THANKS.ordinal() == position)
+        {
+            Intent intent = new Intent(this, specialThanks.class);
             startActivity(intent);
         }
         else if(menuOptions.SET_ANIMATIONS.ordinal() == position)

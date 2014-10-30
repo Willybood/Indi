@@ -20,7 +20,6 @@
 
 #include <adk.h>
 #include <Servo.h>
-//#include <SimpleList.h> // GPLv3
 #include <avr/wdt.h> // Watchdog library
 
 USB Usb;
@@ -57,7 +56,6 @@ struct KeyframePacket {
   uint8_t degreesToReach;
   uint16_t timeToPosition;
 };
-//SimpleList <KeyFrame> servoAnimations[NUMOFSERVOS];
 KeyFrame servoAnimations[NUMOFSERVOS];
 
 void setup() {
