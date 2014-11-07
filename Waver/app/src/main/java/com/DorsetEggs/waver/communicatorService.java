@@ -48,9 +48,6 @@ import java.nio.ByteOrder;
 import java.util.Vector;
 
 public class communicatorService extends IntentService {
-    public enum ServoTypes {DLARM, ULARM, DRARM, URARM, NUMOFSERVOS}
-    private static final int MAX_SERVO_ROTATION = 180;
-
     //Notification variables
     NotificationCompat.Builder mBuilder;
     int mId = 29;
@@ -68,7 +65,7 @@ public class communicatorService extends IntentService {
     //2D vector [Servo][Keyframe]
     Vector<Vector<KeyframePacket>> servoAnimations = new Vector<Vector<KeyframePacket>>();
     Vector<KeyframePacket> defaultServoPositions = new Vector<KeyframePacket>(); // The default positions for the motors
-    byte[] servoAnimationInPlay = new byte[ServoTypes.NUMOFSERVOS.ordinal()];
+    byte[] servoAnimationInPlay = new byte[globals.ServoTypes.NUMOFSERVOS.ordinal()];
 
     public static final boolean D = BuildConfig.DEBUG; // This is automatically set when building
     private static final String TAG = "IndiActivity"; // TAG is used to debug in Android logcat console
@@ -110,7 +107,6 @@ public class communicatorService extends IntentService {
         //Using the the flag to decide if this is a singleton
         sendDebugMessage("Intent handled, active == true");
         /*if(!active)*/ {
-            //android.os.Debug.waitForDebugger();
             callOngoing = false;
             sendDebugMessage("Waiting for connection");
 
@@ -141,7 +137,12 @@ public class communicatorService extends IntentService {
                     launchNotification(mId, "Indi connected");
                     resetMotors();
                     //Initialise the database
-                    SQLiteDatabase db = globals.dbHelper.getWritableDatabase();
+                    db = globals.dbHelper.getWritableDatabase();
+
+                    // When connected and initialised, start the video and wait for the call.
+                    Intent filmPlayerIntent = new Intent(this, filmPlayer.class);
+                    startActivity(filmPlayerIntent);
+                    sendAnimation(globals.animOptions.KICKSTARTER_VIDEO.ordinal());
                 }
                 else {
                     setConnectionStatus(false);
@@ -203,7 +204,7 @@ public class communicatorService extends IntentService {
     private void instantiateAnimation()
     {
         //Load the default position
-        for(byte i = 0; i < ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
+        for(byte i = 0; i < globals.ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
             KeyframePacket keyframe = new KeyframePacket();
             keyframe.servoToApplyTo = i;
             keyframe.degreesToReach = 0;
@@ -211,7 +212,7 @@ public class communicatorService extends IntentService {
             defaultServoPositions.add(keyframe);
         }
         //Load the default waving animation, kept here for debugging purposes
-        /*for(byte i = 0; i < ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
+        /*for(byte i = 0; i < globals.ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
             Vector<KeyframePacket> servoAnimation = new Vector<KeyframePacket>();
             KeyframePacket keyframe1 = new KeyframePacket();
             KeyframePacket keyframe2 = new KeyframePacket();
@@ -231,7 +232,7 @@ public class communicatorService extends IntentService {
 
     private void resetServoAnimations()
     {
-        for(byte i = 0; i < ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
+        for(byte i = 0; i < globals.ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
             transmitKeyFrame(defaultServoPositions.elementAt(i));
         }
     }
@@ -268,7 +269,7 @@ public class communicatorService extends IntentService {
     public void resetMotors()
     {
         //Make sure the servos are in the default position
-        for(byte i = 0; i < ServoTypes.NUMOFSERVOS.ordinal(); ++i)
+        for(byte i = 0; i < globals.ServoTypes.NUMOFSERVOS.ordinal(); ++i)
         {
             transmitKeyFrame(defaultServoPositions.elementAt(i));
         }
@@ -276,7 +277,7 @@ public class communicatorService extends IntentService {
 
     public void sendDebugMessage(String text)
     {
-        launchNotification(mId, text);
+        Toast.makeText(this, text, Toast.LENGTH_LONG).show();
         Log.d(TAG, text);
     }
 
@@ -420,11 +421,7 @@ public class communicatorService extends IntentService {
                 String incomingNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
                 Log.e(TAG, "Call from:" + incomingNumber);
                 callOngoing = true;
-                loadAnimation(globals.animOptions.CALL_RECIEVED.ordinal());
-                for(byte i = 0; i < ServoTypes.NUMOFSERVOS.ordinal(); ++i)
-                {
-                    sendKeyframe(i, 0);
-                }
+                sendAnimation(globals.animOptions.CALL_RECIEVED.ordinal());
 
             } else if (intent.getStringExtra(TelephonyManager.EXTRA_STATE).equals(
                     TelephonyManager.EXTRA_STATE_IDLE)
@@ -437,7 +434,8 @@ public class communicatorService extends IntentService {
         }
     };
 
-    private void loadAnimation(int animOption)
+
+    private void sendAnimation(int animOption)
     {
         //First, load the animation to use
         String[] projectionAnimToActions = {
@@ -458,7 +456,7 @@ public class communicatorService extends IntentService {
 
         if(cAnimToActions.getColumnCount() == 0)
         {
-            Toast.makeText(this, "Animation not found for action", Toast.LENGTH_LONG).show();
+            sendDebugMessage("Animation not found for action");
         }
 
         //Next load the selected animation
@@ -470,7 +468,7 @@ public class communicatorService extends IntentService {
                 globals.Animations.COLUMN_NAME_KEYFRAME + " DESC";
 
         //Finally place the animation into the array for later processing
-        for(Integer i = 0; i < ServoTypes.NUMOFSERVOS.ordinal(); ++i)
+        for(Integer i = 0; i < globals.ServoTypes.NUMOFSERVOS.ordinal(); ++i)
         {
             String whereClause = globals.Animations.COLUMN_NAME_TITLE + " = " + cAnimToActions.getString(cAnimToActions.getColumnIndex(globals.AnimToActions.COLUMN_NAME_ANIMATION)) +
                     " AND " + globals.Animations.COLUMN_NAME_MOTOR + " = " + i.toString();
@@ -486,7 +484,7 @@ public class communicatorService extends IntentService {
             );
             if(cAnimations.getColumnCount() == 0)
             {
-                Toast.makeText(this, "Animation not found", Toast.LENGTH_LONG).show();
+                sendDebugMessage("Animation not found");
             }
 
             if (cAnimations != null ) {
@@ -504,6 +502,11 @@ public class communicatorService extends IntentService {
                     servoAnimations.add(i, servoAnimation);
                 }
             }
+        }
+
+        for(byte i = 0; i < globals.ServoTypes.NUMOFSERVOS.ordinal(); ++i)
+        {
+            sendKeyframe(i, 0);
         }
     }
 }

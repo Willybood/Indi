@@ -20,6 +20,7 @@
 
 package com.DorsetEggs.waver;
 
+import android.net.Uri;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -38,7 +39,9 @@ public class filmPlayer extends ActionBarActivity {
                 (VideoView) findViewById(R.id.videoView);
 
         // todo: Add video player when we can and test this
-        //videoView.setVideoPath(R.video.myFace);
+        Uri kickstarterVideo =
+                Uri.parse("android.resource://" + getPackageName() + "/"+R.raw.concatenated_video);
+        videoView.setVideoURI(kickstarterVideo);
 
         videoView.start();
     }
