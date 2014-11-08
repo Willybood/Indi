@@ -40,7 +40,7 @@ public class filmPlayer extends ActionBarActivity {
 
         // todo: Add video player when we can and test this
         Uri kickstarterVideo =
-                Uri.parse("android.resource://" + getPackageName() + "/"+R.raw.concatenated_video);
+                Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.concatenated_video);
         videoView.setVideoURI(kickstarterVideo);
 
         videoView.start();

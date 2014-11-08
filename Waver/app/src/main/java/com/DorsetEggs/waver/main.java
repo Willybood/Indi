@@ -31,8 +31,7 @@ import java.util.TimerTask;
 
 public class main extends Activity {
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
@@ -46,8 +45,7 @@ public class main extends Activity {
     }
 
     @Override
-    public void onResume()
-    {
+    public void onResume() {
         super.onResume();
 
         //Show splash screen for 3 seconds
@@ -61,11 +59,10 @@ public class main extends Activity {
         }, 3000);
     }
 
-    private void checkUSB()
-    {
+    private void checkUSB() {
         // If connected, end the app
         // Otherwise, goto the menu
-        if(!isMyServiceRunning(communicatorService.class)) {
+        if (!isMyServiceRunning(communicatorService.class)) {
             Intent intent = new Intent(this, menu.class);
             startActivity(intent);
         }

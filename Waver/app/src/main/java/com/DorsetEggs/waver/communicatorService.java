@@ -61,7 +61,9 @@ public class communicatorService extends IntentService {
         //The max amount of time that an animation keyframe can take is 65 seconds.
         //We can up it later if we feel like it by upping these variables to uint32_t
         public short/*uint16_t*/ timeToPosition;//Time in ms to reach this point
-    };
+    }
+
+    ;
     //2D vector [Servo][Keyframe]
     Vector<Vector<KeyframePacket>> servoAnimations = new Vector<Vector<KeyframePacket>>();
     Vector<KeyframePacket> defaultServoPositions = new Vector<KeyframePacket>(); // The default positions for the motors
@@ -89,7 +91,9 @@ public class communicatorService extends IntentService {
      * A constructor is required, and must call the super IntentService(String)
      * constructor with a name for the worker thread.
      */
-    public communicatorService() { super("communicatorService"); }
+    public communicatorService() {
+        super("communicatorService");
+    }
 
     @Override
     public void onCreate() {
@@ -106,7 +110,8 @@ public class communicatorService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         //Using the the flag to decide if this is a singleton
         sendDebugMessage("Intent handled, active == true");
-        /*if(!active)*/ {
+        /*if(!active)*/
+        {
             callOngoing = false;
             sendDebugMessage("Waiting for connection");
 
@@ -143,8 +148,7 @@ public class communicatorService extends IntentService {
                     Intent filmPlayerIntent = new Intent(this, filmPlayer.class);
                     startActivity(filmPlayerIntent);
                     sendAnimation(globals.animOptions.KICKSTARTER_VIDEO.ordinal());
-                }
-                else {
+                } else {
                     setConnectionStatus(false);
                     synchronized (mUsbReceiver) {
                         if (!mPermissionRequestPending) {
@@ -163,10 +167,8 @@ public class communicatorService extends IntentService {
         }
     }
 
-    private void launchNotification(int id, String notificationText)
-    {
-        if(mNotificationManager == null)
-        {
+    private void launchNotification(int id, String notificationText) {
+        if (mNotificationManager == null) {
             mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         }
         NotificationCompat.Builder mBuilder =
@@ -180,14 +182,12 @@ public class communicatorService extends IntentService {
     }
 
     //Wrapper class for the below 'transmitKeyFrame'
-    private void sendKeyframe(byte servo, int keyframe)
-    {
+    private void sendKeyframe(byte servo, int keyframe) {
         transmitKeyFrame(servoAnimations.get(servo).get(keyframe));
         sendDebugMessage("Keyframe sent -/nServo = " + servo + "/nkeyframe = " + keyframe);
     }
 
-    private void transmitKeyFrame(KeyframePacket keyframePacket)
-    {
+    private void transmitKeyFrame(KeyframePacket keyframePacket) {
         sendDebugMessage("Entering function" + Thread.currentThread().getStackTrace());
         if (mOutputStream != null) {
             try {
@@ -201,10 +201,9 @@ public class communicatorService extends IntentService {
         }
     }
 
-    private void instantiateAnimation()
-    {
+    private void instantiateAnimation() {
         //Load the default position
-        for(byte i = 0; i < globals.ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
+        for (byte i = 0; i < globals.ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
             KeyframePacket keyframe = new KeyframePacket();
             keyframe.servoToApplyTo = i;
             keyframe.degreesToReach = 0;
@@ -230,9 +229,8 @@ public class communicatorService extends IntentService {
         resetServoAnimations();
     }
 
-    private void resetServoAnimations()
-    {
-        for(byte i = 0; i < globals.ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
+    private void resetServoAnimations() {
+        for (byte i = 0; i < globals.ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
             transmitKeyFrame(defaultServoPositions.elementAt(i));
         }
     }
@@ -246,19 +244,15 @@ public class communicatorService extends IntentService {
         return bytes.array();
     }
 
-    private void animationCompleteReceived(byte servo)
-    {
-        if(true == callOngoing)
-        {
+    private void animationCompleteReceived(byte servo) {
+        if (true == callOngoing) {
             servoAnimationInPlay[servo] += 1;
-            if(servoAnimationInPlay[servo] >= servoAnimations.get(servo).size())
-            {
+            if (servoAnimationInPlay[servo] >= servoAnimations.get(servo).size()) {
                 servoAnimationInPlay[servo] = 0;
             }
             sendKeyframe(servo, servoAnimationInPlay[servo]);
             sendReset = true;
-        }
-        else if(sendReset) //If the call is disconnected, send a signal to reset the motors once
+        } else if (sendReset) //If the call is disconnected, send a signal to reset the motors once
         {
             resetMotors();
             sendReset = false;
@@ -266,17 +260,14 @@ public class communicatorService extends IntentService {
         sendDebugMessage("Animation complete recieved");
     }
 
-    public void resetMotors()
-    {
+    public void resetMotors() {
         //Make sure the servos are in the default position
-        for(byte i = 0; i < globals.ServoTypes.NUMOFSERVOS.ordinal(); ++i)
-        {
+        for (byte i = 0; i < globals.ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
             transmitKeyFrame(defaultServoPositions.elementAt(i));
         }
     }
 
-    public void sendDebugMessage(String text)
-    {
+    public void sendDebugMessage(String text) {
         Toast.makeText(this, text, Toast.LENGTH_LONG).show();
         Log.d(TAG, text);
     }
@@ -291,10 +282,9 @@ public class communicatorService extends IntentService {
 
     private void setConnectionStatus(boolean connected) {
         //exit when disconnected
-        if(connected == false)
-        {
+        if (connected == false) {
             sendDebugMessage("Exiting due to disconnection");
-            if(mNotificationManager != null) {
+            if (mNotificationManager != null) {
                 mNotificationManager.cancel(mId);
             }
             active = false;
@@ -368,8 +358,7 @@ public class communicatorService extends IntentService {
                     UsbAccessory accessory = UsbManager.getAccessory(intent);
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         openAccessory(accessory);
-                    }
-                    else {
+                    } else {
                         if (D)
                             sendDebugMessage("Permission denied for accessory " + accessory);
                     }
@@ -435,8 +424,7 @@ public class communicatorService extends IntentService {
     };
 
 
-    private void sendAnimation(int animOption)
-    {
+    private void sendAnimation(int animOption) {
         //First, load the animation to use
         String[] projectionAnimToActions = {
                 globals.AnimToActions.COLUMN_NAME_ACTION,
@@ -454,8 +442,7 @@ public class communicatorService extends IntentService {
                 sortOrderAnimToActions                                         // The sort order
         );
 
-        if(cAnimToActions.getColumnCount() == 0)
-        {
+        if (cAnimToActions.getColumnCount() == 0) {
             sendDebugMessage("Animation not found for action");
         }
 
@@ -468,8 +455,7 @@ public class communicatorService extends IntentService {
                 globals.Animations.COLUMN_NAME_KEYFRAME + " DESC";
 
         //Finally place the animation into the array for later processing
-        for(Integer i = 0; i < globals.ServoTypes.NUMOFSERVOS.ordinal(); ++i)
-        {
+        for (Integer i = 0; i < globals.ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
             String whereClause = globals.Animations.COLUMN_NAME_TITLE + " = " + cAnimToActions.getString(cAnimToActions.getColumnIndex(globals.AnimToActions.COLUMN_NAME_ANIMATION)) +
                     " AND " + globals.Animations.COLUMN_NAME_MOTOR + " = " + i.toString();
 
@@ -482,30 +468,28 @@ public class communicatorService extends IntentService {
                     null,                          // don't filter by row groups
                     sortOrderAnimations            // The sort order
             );
-            if(cAnimations.getColumnCount() == 0)
-            {
+            if (cAnimations.getColumnCount() == 0) {
                 sendDebugMessage("Animation not found");
             }
 
-            if (cAnimations != null ) {
-                if  (cAnimations.moveToFirst()) {
+            if (cAnimations != null) {
+                if (cAnimations.moveToFirst()) {
                     int positionColumn = cAnimations.getColumnIndex(globals.Animations.COLUMN_NAME_POSITION);
                     int timeColumn = cAnimations.getColumnIndex(globals.Animations.COLUMN_NAME_TIME);
                     Vector<KeyframePacket> servoAnimation = new Vector<KeyframePacket>();
                     do {
                         KeyframePacket keyframe = new KeyframePacket();
                         keyframe.servoToApplyTo = i.byteValue();
-                        keyframe.degreesToReach = (byte)cAnimations.getInt(positionColumn);
-                        keyframe.timeToPosition = (short)cAnimations.getInt(timeColumn);
+                        keyframe.degreesToReach = (byte) cAnimations.getInt(positionColumn);
+                        keyframe.timeToPosition = (short) cAnimations.getInt(timeColumn);
                         servoAnimation.add(keyframe);
-                    }while (cAnimations.moveToNext());
+                    } while (cAnimations.moveToNext());
                     servoAnimations.add(i, servoAnimation);
                 }
             }
         }
 
-        for(byte i = 0; i < globals.ServoTypes.NUMOFSERVOS.ordinal(); ++i)
-        {
+        for (byte i = 0; i < globals.ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
             sendKeyframe(i, 0);
         }
     }

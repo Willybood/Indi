@@ -32,24 +32,24 @@ import static android.database.DatabaseUtils.queryNumEntries;
 public final class globals {
     // To prevent someone from accidentally instantiating the contract class,
     // give it an empty constructor.
-    public globals() {}
+    public globals() {
+    }
 
     public static enum ServoTypes {DLARM, ULARM, DRARM, URARM, NUMOFSERVOS}
+
     private static final int MAX_SERVO_ROTATION = 180;
 
     //A container for incremented keyframes and timestamps. Useful for complex animations.
-    private static class motorIncrementer
-    {
+    private static class motorIncrementer {
         public int keyframe;
         public int lastTimeStamp;
-        public motorIncrementer()
-        {
+
+        public motorIncrementer() {
             restart();
         }
 
         //Reset the log for a new animation
-        public void restart()
-        {
+        public void restart() {
             keyframe = 0;
             lastTimeStamp = 0;
         }
@@ -71,6 +71,7 @@ public final class globals {
         DELETE_ANIMATION,
         NUM_OF_REASONS
     }
+
     public static final String EXTRA_MESSAGE = "com.DorsetEggs.waver.MESSAGE";
 
     // SQL related constants
@@ -82,6 +83,7 @@ public final class globals {
         public static final String COLUMN_NAME_TIME = "time";
         public static final String COLUMN_NAME_POSITION = "position";
     }
+
     public static abstract class AnimToActions implements BaseColumns {
         public static final String TABLE_NAME = "animToActions";
         public static final String COLUMN_NAME_ACTION = "action";
@@ -92,8 +94,7 @@ public final class globals {
     public static SQLDBHelper dbHelper;
 
     //Default animations to load up into database
-    public static void checkDatabaseHasEntries()
-    {
+    public static void checkDatabaseHasEntries() {
         // Gets the data repository in write mode
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
@@ -103,7 +104,7 @@ public final class globals {
         {
             // Insert value and default for a call event
             ContentValues
-            values = new ContentValues();
+                    values = new ContentValues();
             values.put(AnimToActions.COLUMN_NAME_ACTION, animOptions.CALL_RECIEVED.ordinal());
             values.put(AnimToActions.COLUMN_NAME_ANIMATION, "Two hand wave");
             // Insert the new row, returning the primary key value of the new row
@@ -145,8 +146,7 @@ public final class globals {
     }
 
     // This is the animation for the kickstarter video.
-    private static void setKickstarterAnimation(SQLiteDatabase db)
-    {
+    private static void setKickstarterAnimation(SQLiteDatabase db) {
         // kickstarterAnimations[] is coupled with 'addKickstarterFrame'. Not great, but hey ho.
         // It's only temp code anyway...
         kickstarterAnimations.clear();
@@ -404,8 +404,7 @@ public final class globals {
         addKickstarterFrame(db, 15742, 0, ServoTypes.DRARM.ordinal());
     }
 
-    private static void addKickstarterFrame(SQLiteDatabase db, int timeStamp, int position, int motor)
-    {
+    private static void addKickstarterFrame(SQLiteDatabase db, int timeStamp, int position, int motor) {
         final String name = "Kickstarter";
         motorIncrementer incrementer = kickstarterAnimations.get(motor);
         insertKeyframe(db,
@@ -416,8 +415,7 @@ public final class globals {
     }
 
     private static void insertKeyframe(SQLiteDatabase db,
-                                String name, int keyframe, int time, int position, int motor)
-    {
+                                       String name, int keyframe, int time, int position, int motor) {
         ContentValues values = new ContentValues();
         values.put(Animations.COLUMN_NAME_TITLE, name);
         values.put(Animations.COLUMN_NAME_KEYFRAME, keyframe);
