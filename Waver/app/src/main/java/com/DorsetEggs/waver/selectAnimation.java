@@ -37,6 +37,7 @@ public class selectAnimation extends ListActivity {
     int reasonForCall = globals.animationReasons.ERROR.ordinal();
     SQLiteDatabase db;
     Vector<String> results = new Vector<String>();
+
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
         Intent intent = getIntent();
@@ -61,11 +62,11 @@ public class selectAnimation extends ListActivity {
                 null                               // The cancellation signal
 
         );
-        if (namesOfAnimations != null ) {
-            if  (namesOfAnimations.moveToFirst()) {
+        if (namesOfAnimations != null) {
+            if (namesOfAnimations.moveToFirst()) {
                 do {
                     results.add(namesOfAnimations.getString(namesOfAnimations.getColumnIndex(globals.Animations.COLUMN_NAME_TITLE)));
-                }while (namesOfAnimations.moveToNext());
+                } while (namesOfAnimations.moveToNext());
             }
         }
 
@@ -76,8 +77,7 @@ public class selectAnimation extends ListActivity {
 
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
-        if(reasonForCall == globals.animationReasons.SET_CALL_RECIEVED_ANIMATION.ordinal())
-        {
+        if (reasonForCall == globals.animationReasons.SET_CALL_RECIEVED_ANIMATION.ordinal()) {
             // Create a new map of values, where column names are the keys
             ContentValues values = new ContentValues();
             values.put(globals.AnimToActions.COLUMN_NAME_ACTION,
@@ -90,25 +90,18 @@ public class selectAnimation extends ListActivity {
                     globals.AnimToActions.TABLE_NAME,
                     null,
                     values);
-        }
-        else if(reasonForCall == globals.animationReasons.DELETE_ANIMATION.ordinal())
-        {
+        } else if (reasonForCall == globals.animationReasons.DELETE_ANIMATION.ordinal()) {
             int numDeleted = db.delete(globals.Animations.TABLE_NAME,
                     globals.Animations.COLUMN_NAME_TITLE + " = " +
                             results.elementAt(position), null);
 
-            if(numDeleted > 0)
-            {
+            if (numDeleted > 0) {
                 Toast.makeText(this, "Animation " + reasonForCall + " deleted",
                         Toast.LENGTH_LONG).show();
-            }
-            else
-            {
+            } else {
                 Toast.makeText(this, "Animation not found", Toast.LENGTH_LONG).show();
             }
-        }
-        else
-        {
+        } else {
             Toast.makeText(this, "Reason " + reasonForCall + " not found",
                     Toast.LENGTH_LONG).show();
         }

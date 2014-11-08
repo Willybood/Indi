@@ -30,7 +30,9 @@ public class SQLService extends IntentService {
      * A constructor is required, and must call the super IntentService(String)
      * constructor with a name for the worker thread.
      */
-    public SQLService() { super("SQLService"); }
+    public SQLService() {
+        super("SQLService");
+    }
 
     @Override
     public void onCreate() {

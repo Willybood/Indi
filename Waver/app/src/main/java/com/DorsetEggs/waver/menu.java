@@ -42,7 +42,8 @@ public class menu extends ListActivity {
         DELETE_ANIMATIONS,
         NUM_OF_OPTIONS
     }
-    final String [] menuValues = new String[] {
+
+    final String[] menuValues = new String[]{
             // todo: Put this back when we have a proper editor for animations
             "Set animations",
             "Special thanks"
@@ -59,29 +60,20 @@ public class menu extends ListActivity {
 
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
-        if(menuOptions.CREATE_ANIMATION.ordinal() == position)
-        {
+        if (menuOptions.CREATE_ANIMATION.ordinal() == position) {
             Intent intent = new Intent(this, animationEditor.class);
             startActivity(intent);
-        }
-        else if(menuOptions.SPECIAL_THANKS.ordinal() == position)
-        {
+        } else if (menuOptions.SPECIAL_THANKS.ordinal() == position) {
             Intent intent = new Intent(this, specialThanks.class);
             startActivity(intent);
-        }
-        else if(menuOptions.SET_ANIMATIONS.ordinal() == position)
-        {
+        } else if (menuOptions.SET_ANIMATIONS.ordinal() == position) {
             Intent intent = new Intent(this, selectActivity.class);
             startActivity(intent);
-        }
-        else if(menuOptions.DELETE_ANIMATIONS.ordinal() == position)
-        {
+        } else if (menuOptions.DELETE_ANIMATIONS.ordinal() == position) {
             Intent intent = new Intent(this, selectAnimation.class);
             startActivity(intent);
             intent.putExtra(globals.EXTRA_MESSAGE, globals.animationReasons.DELETE_ANIMATION.ordinal());
-        }
-        else
-        {
+        } else {
             String item = (String) getListAdapter().getItem(position);
             Toast.makeText(this, item + " not found", Toast.LENGTH_LONG).show();
         }

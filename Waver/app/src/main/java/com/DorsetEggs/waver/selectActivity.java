@@ -29,7 +29,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 public class selectActivity extends ListActivity {
-    final String [] setAnimValues = new String[] {
+    final String[] setAnimValues = new String[]{
             "Call recieved"
     };
 
@@ -42,14 +42,11 @@ public class selectActivity extends ListActivity {
 
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
-        if(globals.animOptions.CALL_RECIEVED.ordinal() == position)
-        {
+        if (globals.animOptions.CALL_RECIEVED.ordinal() == position) {
             Intent intent = new Intent(this, selectAnimation.class);
             intent.putExtra(globals.EXTRA_MESSAGE, globals.animationReasons.SET_CALL_RECIEVED_ANIMATION.ordinal());
             startActivity(intent);
-        }
-        else
-        {
+        } else {
             String item = (String) getListAdapter().getItem(position);
             Toast.makeText(this, item + " not found", Toast.LENGTH_LONG).show();
         }

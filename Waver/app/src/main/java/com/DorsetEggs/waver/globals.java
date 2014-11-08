@@ -30,7 +30,8 @@ import static android.database.DatabaseUtils.queryNumEntries;
 public final class globals {
     // To prevent someone from accidentally instantiating the contract class,
     // give it an empty constructor.
-    public globals() {}
+    public globals() {
+    }
 
     //The different ways animations could be manipulated
     public static enum animOptions {
@@ -45,6 +46,7 @@ public final class globals {
         DELETE_ANIMATION,
         NUM_OF_REASONS
     }
+
     public static final String EXTRA_MESSAGE = "com.DorsetEggs.waver.MESSAGE";
 
     // SQL related constants
@@ -56,6 +58,7 @@ public final class globals {
         public static final String COLUMN_NAME_TIME = "time";
         public static final String COLUMN_NAME_POSITION = "position";
     }
+
     public static abstract class AnimToActions implements BaseColumns {
         public static final String TABLE_NAME = "animToActions";
         public static final String COLUMN_NAME_ACTION = "action";
@@ -66,14 +69,12 @@ public final class globals {
     public static SQLDBHelper dbHelper;
 
     //Default animations to load up into database
-    public static void checkDatabaseHasEntries()
-    {
+    public static void checkDatabaseHasEntries() {
         // Gets the data repository in write mode
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         // Check if the action to animation database is empty
-        if(queryNumEntries(db, AnimToActions.TABLE_NAME) == 0)
-        {
+        if (queryNumEntries(db, AnimToActions.TABLE_NAME) == 0) {
             ContentValues values = new ContentValues();
             values.put(AnimToActions.COLUMN_NAME_ACTION, animOptions.CALL_RECIEVED.ordinal());
             values.put(AnimToActions.COLUMN_NAME_ANIMATION, "Two hand wave");
@@ -85,7 +86,7 @@ public final class globals {
         }
 
         // Check if the animation database is empty
-        if(queryNumEntries(db, Animations.TABLE_NAME) == 0) {
+        if (queryNumEntries(db, Animations.TABLE_NAME) == 0) {
             // If it is, write some default entries
             // A simple two handed wave...
             for (int i = 0; i < communicatorService.ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
