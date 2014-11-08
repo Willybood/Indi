@@ -37,17 +37,17 @@ public class specialThanks extends ListActivity {
         public String name;
         public String plug;
         public String link;
-        public Backer(String nameInput, String plugInput, String linkInput)
-        {
+
+        public Backer(String nameInput, String plugInput, String linkInput) {
             name = nameInput;
             plug = plugInput;
             link = linkInput;
         }
     }
+
     private ArrayList<Backer> backers;
 
-    private ArrayList<Backer> setUpBackerList()
-    {
+    private ArrayList<Backer> setUpBackerList() {
         ArrayList<Backer> backerList = new ArrayList<Backer>();
 
         backerList.add(new Backer("Moll Teaser", "@Malty", "https://twitter.com/Malty"));
