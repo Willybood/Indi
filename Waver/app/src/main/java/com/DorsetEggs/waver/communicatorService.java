@@ -173,7 +173,7 @@ public class communicatorService extends IntentService {
         }
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_notification2)
+                        .setSmallIcon(R.drawable.ic_notification)
                         .setContentTitle(notificationText);
         NotificationCompat.InboxStyle inboxStyle =
                 new NotificationCompat.InboxStyle();
