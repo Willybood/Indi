@@ -20,19 +20,31 @@
 
 package com.DorsetEggs.waver;
 
+import android.app.Activity;
 import android.net.Uri;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.VideoView;
 
 
-public class filmPlayer extends ActionBarActivity {
+public class filmPlayer extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //Remove title bar
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        //Remove notification bar
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+
         setContentView(R.layout.activity_film_player);
 
         final VideoView videoView =

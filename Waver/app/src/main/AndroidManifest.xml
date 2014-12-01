@@ -70,6 +70,8 @@
                 android:value="com.DorsetEggs.waver.menu" />
         </activity>
         <activity
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|keyboardHidden"
             android:name=".filmPlayer"
             android:label="@string/title_activity_film_player" >
         </activity>
