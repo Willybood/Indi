@@ -36,16 +36,16 @@ public class main extends Activity {
         setContentView(R.layout.main);
 
         // Start the SQL service
-        /*Intent SQLIntent = new Intent(this, SQLService.class);
+        Intent SQLIntent = new Intent(this, SQLService.class);
         this.startService(SQLIntent);
 
         // Start the communicator service
         Intent commIntent = new Intent(this, communicatorService.class);
-        this.startService(commIntent);*/
+        this.startService(commIntent);
 
         // Temporary test code for the video, remove later.
-        Intent filmer = new Intent(this, filmPlayer.class);
-        startActivity(filmer);
+        /*Intent filmer = new Intent(this, filmPlayer.class);
+        startActivity(filmer);*/
     }
 
     @Override
@@ -53,14 +53,14 @@ public class main extends Activity {
         super.onResume();
 
         //Show splash screen for 3 seconds
-        /*Timer t = new Timer();
+        Timer t = new Timer();
         t.schedule(new TimerTask() {
 
             @Override
             public void run() {
                 checkUSB();
             }
-        }, 3000);*/
+        }, 3000);
     }
 
     private void checkUSB() {
