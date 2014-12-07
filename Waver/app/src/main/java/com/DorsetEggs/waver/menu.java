@@ -38,7 +38,6 @@ public class menu extends ListActivity {
     private enum menuOptions {
         SET_ANIMATIONS,
         SPECIAL_THANKS,
-        CREATE_ANIMATION,
         DELETE_ANIMATIONS,
         NUM_OF_OPTIONS
     }
@@ -47,7 +46,6 @@ public class menu extends ListActivity {
             // todo: Put this back when we have a proper editor for animations
             "Set animations",
             "Special thanks"
-            //"Create animation",
             //"Delete animations"
     };
 
@@ -60,10 +58,7 @@ public class menu extends ListActivity {
 
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
-        if (menuOptions.CREATE_ANIMATION.ordinal() == position) {
-            Intent intent = new Intent(this, animationEditor.class);
-            startActivity(intent);
-        } else if (menuOptions.SPECIAL_THANKS.ordinal() == position) {
+        if (menuOptions.SPECIAL_THANKS.ordinal() == position) {
             Intent intent = new Intent(this, specialThanks.class);
             startActivity(intent);
         } else if (menuOptions.SET_ANIMATIONS.ordinal() == position) {

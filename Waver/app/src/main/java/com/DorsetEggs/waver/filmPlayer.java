@@ -50,7 +50,6 @@ public class filmPlayer extends Activity {
         final VideoView videoView =
                 (VideoView) findViewById(R.id.videoView);
 
-        // todo: Add video player when we can and test this
         Uri kickstarterVideo =
                 Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.concatenated_video);
         videoView.setVideoURI(kickstarterVideo);

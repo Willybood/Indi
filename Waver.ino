@@ -100,8 +100,9 @@ void recieveAnimationCommand()
     uint8_t rcode = adk.RcvData(&len, msg);
     if (rcode && rcode != hrNAK) {
       //Data error
-      Serial.print(F("\r\nData rcv error: "));
+      Serial.print(F("\r\nForcing restart: Data rcv error: "));
       Serial.print(rcode, HEX);
+      for(;;); // Reset the system
     } else if (len == 0)
     {
       //No input recieved
