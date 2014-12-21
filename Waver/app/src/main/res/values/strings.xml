@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Waver</string>
+    <string name="app_name">Indi</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_animation_editor">animationEditor</string>
-    <string name="preference_file_key">com.DorsetEggs.waver.preferences</string>
+    <string name="preference_file_key">com.DorsetEggs.indi.preferences</string>
     <string name="title_activity_film_player">filmPlayer</string>
 
 </resources>

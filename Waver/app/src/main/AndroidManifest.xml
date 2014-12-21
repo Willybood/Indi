@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.DorsetEggs.waver" >
+    package="com.DorsetEggs.indi" >
     <uses-feature android:name="android.hardware.usb.accessory" />
 
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
@@ -67,7 +67,7 @@
             android:theme="@style/AppTheme" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.DorsetEggs.waver.menu" />
+                android:value="com.DorsetEggs.indi.menu" />
         </activity>
         <activity
             android:screenOrientation="landscape"

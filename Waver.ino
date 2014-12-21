@@ -24,7 +24,7 @@
 
 USB Usb;
 ADK adk(&Usb, "DorsetEggs", // Manufacturer Name
-              "Waver", // Model Name
+              "Indi", // Model Name
               "Plastic prototype for the Robot", // Description (user-visible string)
               "1.0", // Version
               "http://www.tkjelectronics.dk/uploads/ArduinoBlinkLED.apk", // URL (web page to visit if no installed apps support the accessory)
@@ -34,12 +34,15 @@ enum ServoTypes {DLARM = 0, ULARM, DRARM, URARM, NUMOFSERVOS};
 Servo servos[NUMOFSERVOS];
 #define SEVO_PIN_DEFINITION {/*DLARM = */4, /*ULARM = */5, /*DRARM = */6, /*URARM = */7}
 #define MAX_SERVO_ROTATION 180
+#define SEND_DELAY ((uint32_t)(100)) // Introduce a slight delay between transmissions
+
 uint32_t start = 0;
 uint32_t finished = 0;
 uint32_t timeBetweenProcessing = 0;
 
 struct KeyFrame {
   uint8_t degreesToReach; // 0 to 180, 0 is straight down
+  uint8_t previousDegressPosition; // The position of the motor as the next packet comes in
   //The max amount of time that an animation keyframe can take is 65 seconds.
   //We can up it later if we feel like it by upping these variables to uint32_t
   uint32_t timeToPosition;//Time in micro seconds to reach this point
@@ -48,6 +51,7 @@ struct KeyFrame {
   
   KeyFrame() : initialised(false)
   {
+    previousDegressPosition = 0;
   }
 };
 struct KeyframePacket {
@@ -55,6 +59,7 @@ struct KeyframePacket {
   //The below two are used to instantiate a KeyFrame object
   uint8_t degreesToReach;
   uint16_t timeToPosition;
+  
 };
 KeyFrame servoAnimations[NUMOFSERVOS];
 
@@ -67,7 +72,6 @@ void setup() {
     Serial.print("\r\nOSCOKIRQ failed to assert");
     while (1); // halt
   }
-  Serial.print(F("\r\nRestart"));
 }
 
 void loop() {
@@ -76,6 +80,7 @@ void loop() {
   if (adk.isReady()) {
     wdt_reset(); // Kick the watchdog
     if (!connected) {
+      transmitSoftReset();
       setupServos();
       connected = true;
       Serial.print(F("\r\nConnected to phone"));
@@ -100,12 +105,17 @@ void recieveAnimationCommand()
     uint8_t rcode = adk.RcvData(&len, msg);
     if (rcode && rcode != hrNAK) {
       //Data error
-      Serial.print(F("\r\nForcing restart: Data rcv error: "));
+      Serial.print(F("\r\nData rcv error: "));
       Serial.print(rcode, HEX);
-      for(;;); // Reset the system
+      //Serial.print(F("\r\nForcing restart: Data rcv error: "));
+      //for(;;); // Reset the system
     } else if (len == 0)
     {
       //No input recieved
+    } else if (len == 2)
+      //Reset message recieved, used to work around issue http://stackoverflow.com/questions/8275730/proper-way-to-close-a-usb-accessory-connection
+    {
+      transmitSoftReset();
     } else if (len == packetLen) { //If the recieved packet length is the same as the predicted length
       //Data recieved
       KeyframePacket packet;
@@ -145,6 +155,24 @@ void sendConfirmation(uint8_t servo)
     Serial.print(F("\r\nConfirmation sent - Servo "));
     Serial.print(servo);
   }
+  //delay(SEND_DELAY);
+}
+
+void transmitSoftReset()
+{
+  uint8_t confirmationBuffer[2];
+  confirmationBuffer[0] = ~0;
+  confirmationBuffer[1] = ~0;
+  uint8_t rcode = adk.SndData(2, confirmationBuffer);
+  if (rcode && rcode != hrNAK) {
+    //Data error
+    Serial.print(F("\r\nData send error: "));
+    Serial.print(rcode, HEX);
+  } else if (rcode != hrNAK) {
+    //Data sent
+    Serial.print(F("\r\nReset sent"));
+  }
+  //delay(SEND_DELAY);
 }
 
 void setupServos()
@@ -153,11 +181,13 @@ void setupServos()
   for(int i = 0; i < NUMOFSERVOS; ++i)
   {
     servos[i].attach(servoPins[i]);
+    sendServoCommand(i, 0);
   }
 }
 
 void processServos()
 {
+  bool signalSent = false;
   timeBetweenProcessing = micros() - start;
   start = micros();
   for(int i = 0; i < NUMOFSERVOS; ++i)
@@ -172,27 +202,50 @@ void processServos()
         keyFrameToUse->timeSpent = keyFrameToUse->timeToPosition;
       }
       
-      int32_t degreeToUse = map(keyFrameToUse->timeSpent, 0, keyFrameToUse->timeToPosition, 0, MAX_SERVO_ROTATION);
-      servos[i].write(degreeToUse);
+      int32_t degreeToUse = map(keyFrameToUse->timeSpent,
+                                0, keyFrameToUse->timeToPosition,
+                                keyFrameToUse->previousDegressPosition, keyFrameToUse->degreesToReach);
+      Serial.print(F("\r\nSending out degree "));
+      Serial.print(degreeToUse);
+      sendServoCommand(i, degreeToUse);
       if(keyFrameToUse->timeSpent == keyFrameToUse->timeToPosition)
       {
         Serial.print(F("\r\nAnimation complete - Servo "));
+        char str[15];
+        sprintf(str, "%d", i);
         Serial.print(i);
         servoAnimations[i].initialised = false;
+        keyFrameToUse->previousDegressPosition = keyFrameToUse->degreesToReach;
         sendConfirmation(i);
+        signalSent = true;
       }
       else
       {
-        Serial.print(F("\r\nProcessing animation frame - Servo "));
+        /*Serial.print(F("\r\nProcessing animation frame - Servo "));
         Serial.print(i);
         Serial.print(F(" - timeSpent == "));
         Serial.print(keyFrameToUse->timeSpent);
         Serial.print(F(" - timeToPosition == "));
         Serial.print(keyFrameToUse->timeToPosition);
         Serial.print(F(" - timeBetweenProcessing == "));
-        Serial.print(timeBetweenProcessing);
+        Serial.print(timeBetweenProcessing);*/
       }
     }
   }
+  if(false == signalSent)
+  {
+    //Constantly send out output, resolves a strange bug in the firmware
+    //sendConfirmation(~0);
+  }
+}
+
+void sendServoCommand(int servo, int32_t degreeToUse)
+{
+  // For the two left motors, reverse the orientation of the motors
+  if((DLARM == servo) || (ULARM == servo))
+  {
+    degreeToUse = MAX_SERVO_ROTATION - degreeToUse;
+  }
+  servos[servo].write(degreeToUse);
 }
 

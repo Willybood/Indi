@@ -3,15 +3,15 @@
     <!-- These settings headers are only used on tablets. -->
 
     <header
-        android:fragment="com.DorsetEggs.waver.options$GeneralPreferenceFragment"
+        android:fragment="com.DorsetEggs.indi.options$GeneralPreferenceFragment"
         android:title="@string/pref_header_general" />
 
     <header
-        android:fragment="com.DorsetEggs.waver.options$NotificationPreferenceFragment"
+        android:fragment="com.DorsetEggs.indi.options$NotificationPreferenceFragment"
         android:title="@string/pref_header_notifications" />
 
     <header
-        android:fragment="com.DorsetEggs.waver.options$DataSyncPreferenceFragment"
+        android:fragment="com.DorsetEggs.indi.options$DataSyncPreferenceFragment"
         android:title="@string/pref_header_data_sync" />
 
 </preference-headers>
