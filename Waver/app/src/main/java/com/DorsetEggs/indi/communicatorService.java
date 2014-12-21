@@ -190,25 +190,9 @@ public class communicatorService extends IntentService {
     }
 
     private void transmitKeyFrame(KeyframePacket keyframePacket) {
-        sendSoftReset();
         if (mOutputStream != null) {
             try {
                 byte[] byteArray = toByteArray(keyframePacket);
-                mOutputStream.write(byteArray);
-                replysExpected++;
-            } catch (IOException e) {
-                globals.sendErrorMessage("write failed", e);
-            }
-        }
-    }
-
-    private void sendSoftReset() {
-        globals.sendDebugMessage("Soft reset sent");
-        if (mOutputStream != null) {
-            try {
-                byte[] byteArray = new byte[2];
-                byteArray[0] = ~0;
-                byteArray[1] = ~0;
                 mOutputStream.write(byteArray);
                 replysExpected++;
             } catch (IOException e) {

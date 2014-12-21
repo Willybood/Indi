@@ -63,6 +63,8 @@ struct KeyframePacket {
 };
 KeyFrame servoAnimations[NUMOFSERVOS];
 
+uint32_t handshakeTimer;
+
 void setup() {
   wdt_enable(WDTO_2S); // Initialise the watchdog
   
@@ -80,12 +82,16 @@ void loop() {
   if (adk.isReady()) {
     wdt_reset(); // Kick the watchdog
     if (!connected) {
-      transmitSoftReset();
       setupServos();
       connected = true;
       Serial.print(F("\r\nConnected to phone"));
     }
     recieveAnimationCommand();
+    
+    if (millis() - handshakeTimer >= 1000) { // Send data every 1s to keep everything open
+      handshakeTimer = millis();
+      transmitSoftReset();
+    }
   } else {
     if (connected) {
       connected = false;
@@ -112,10 +118,6 @@ void recieveAnimationCommand()
     } else if (len == 0)
     {
       //No input recieved
-    } else if (len == 2)
-      //Reset message recieved, used to work around issue http://stackoverflow.com/questions/8275730/proper-way-to-close-a-usb-accessory-connection
-    {
-      transmitSoftReset();
     } else if (len == packetLen) { //If the recieved packet length is the same as the predicted length
       //Data recieved
       KeyframePacket packet;
@@ -172,7 +174,6 @@ void transmitSoftReset()
     //Data sent
     Serial.print(F("\r\nReset sent"));
   }
-  //delay(SEND_DELAY);
 }
 
 void setupServos()
