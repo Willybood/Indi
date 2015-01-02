@@ -44,9 +44,9 @@ public final class globals {
     private static final int MAX_SERVO_ROTATION = 180;
 
     //A container for incremented keyframes and timestamps. Useful for complex animations.
-    private static class motorIncrementer {
+    public static class motorIncrementer {
         public int keyframe;
-        public int lastTimeStamp;
+        public long lastTimeStamp;
 
         public motorIncrementer() {
             restart();
@@ -166,7 +166,7 @@ public final class globals {
         for (int i = 0; i < ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
             kickstarterAnimations.add(new motorIncrementer());
         }
-
+/*
         // Part 1
         addKickstarterFrame(db, 730, 30, ServoTypes.ULARM.ordinal());
         addKickstarterFrame(db, 730, 5, ServoTypes.DLARM.ordinal());
@@ -229,8 +229,8 @@ public final class globals {
         addKickstarterFrame(db, 6750, 0, ServoTypes.DLARM.ordinal());
         addKickstarterFrame(db, 6750, 5, ServoTypes.URARM.ordinal());
         addKickstarterFrame(db, 6750, 0, ServoTypes.DRARM.ordinal());
+        */
 
-        /*
         // Part 2
         addKickstarterFrame(db, 100, 10, ServoTypes.ULARM.ordinal());
         addKickstarterFrame(db, 100, 10, ServoTypes.DLARM.ordinal());
@@ -369,7 +369,7 @@ public final class globals {
         addKickstarterFrame(db, 20930, 0, ServoTypes.DLARM.ordinal());
         addKickstarterFrame(db, 20930, 10, ServoTypes.URARM.ordinal());
         addKickstarterFrame(db, 20930, 0, ServoTypes.DRARM.ordinal());
-
+/*
         // Part 3
         addKickstarterFrame(db, 100, 10, ServoTypes.ULARM.ordinal());
         addKickstarterFrame(db, 100, 0, ServoTypes.DLARM.ordinal());
@@ -408,11 +408,11 @@ public final class globals {
         */
     }
 
-    private static void addKickstarterFrame(SQLiteDatabase db, int timeStamp, int position, int motor) {
+    private static void addKickstarterFrame(SQLiteDatabase db, long timeStamp, int position, int motor) {
         final String name = "Kickstarter";
         motorIncrementer incrementer = kickstarterAnimations.get(motor);
         insertKeyframe(db,
-                name, incrementer.keyframe, timeStamp - incrementer.lastTimeStamp, position, motor);
+                name, incrementer.keyframe, (int)(timeStamp - incrementer.lastTimeStamp), position, motor);
         incrementer.keyframe = incrementer.keyframe + 1;
         incrementer.lastTimeStamp = timeStamp;
         kickstarterAnimations.set(motor, incrementer);

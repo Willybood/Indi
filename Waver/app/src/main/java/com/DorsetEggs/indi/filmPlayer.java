@@ -54,7 +54,7 @@ public class filmPlayer extends Activity {
                 (VideoView) findViewById(R.id.videoView);
 
         Uri kickstarterVideo =
-                Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.face_video_part_one);
+                Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.face_video_part_two);
         videoView.setVideoURI(kickstarterVideo);
 
         videoView.start();

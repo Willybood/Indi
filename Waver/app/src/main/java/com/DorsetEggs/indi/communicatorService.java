@@ -31,6 +31,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
+import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.telephony.TelephonyManager;
@@ -54,14 +55,13 @@ public class communicatorService extends IntentService {
     NotificationManager mNotificationManager;
 
     class KeyframePacket {
-        public byte/*uint8_t*/ servoToApplyTo;
-        public byte/*uint8_t*/ degreesToReach; // 0 to 180, 0 is straight down
+        public byte/*int8_t*/ servoToApplyTo;
+        public short/*int16_t*/ degreesToReach; // 0 to 180, 0 is straight down
         //The max amount of time that an animation keyframe can take is 65 seconds.
         //We can up it later if we feel like it by upping these variables to uint32_t
-        public short/*uint16_t*/ timeToPosition;//Time in ms to reach this point
+        public int/*int32_t*/ timeToPosition;//Time in ms to reach this point
     }
 
-    ;
     //2D vector [Servo][Keyframe]
     Vector<Vector<KeyframePacket>> servoAnimations = new Vector<Vector<KeyframePacket>>();
     Vector<KeyframePacket> defaultServoPositions = new Vector<KeyframePacket>(); // The default positions for the motors
@@ -78,9 +78,10 @@ public class communicatorService extends IntentService {
     private boolean mPermissionRequestPending;
     boolean callOngoing;
     boolean sendReset = false;
-    private int replysExpected;
-
-    ConnectedThread mConnectedThread;
+    private long[] outgoneMotorAnimation;
+    private boolean[] motorPlayingAnimation;
+    int timeBetweenProcessing = 0;
+    long start = 0;
 
     SQLiteDatabase db;
 
@@ -99,7 +100,8 @@ public class communicatorService extends IntentService {
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter("start-kickstarter-anim"));
         globals.sendDebugMessage("CommunicatorService is up");
-        replysExpected = 1;
+        outgoneMotorAnimation = new long[globals.ServoTypes.NUMOFSERVOS.ordinal()];
+        motorPlayingAnimation = new boolean[globals.ServoTypes.NUMOFSERVOS.ordinal()];
     }
 
     /**
@@ -149,8 +151,6 @@ public class communicatorService extends IntentService {
                 launchNotification(mId, "Indi connected");
                 //Initialise the database
                 db = globals.dbHelper.getWritableDatabase();
-                // This can all be removed when we remove the Kickstarter version!
-                // When connected and initialised, start the video and wait for the call.
             } else {
                 globals.sendDebugMessage("No USB permission");
                 setConnectionStatus(false);
@@ -166,7 +166,26 @@ public class communicatorService extends IntentService {
             setConnectionStatus(false);
         }
         // Play here until the phone is disconnected
-        while (true) ;
+        while (true)
+        {
+            checkAnimation();
+        }
+    }
+
+    private void checkAnimation()
+    {
+        long currentTime = SystemClock.elapsedRealtime();
+        timeBetweenProcessing = (int)(currentTime - start);
+        start = currentTime;
+        for(byte i = 0; i < globals.ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
+            if(true == motorPlayingAnimation[i]) {
+                outgoneMotorAnimation[i] += timeBetweenProcessing;
+                if (outgoneMotorAnimation[i] > servoAnimations.get(i).get(servoAnimationInPlay[i]).timeToPosition) {
+                    animationComplete(i);
+                    outgoneMotorAnimation[i] = 0;
+                }
+            }
+        }
     }
 
     private void launchNotification(int id, String notificationText) {
@@ -186,7 +205,7 @@ public class communicatorService extends IntentService {
     //Wrapper class for the below 'transmitKeyFrame'
     private void sendKeyframe(byte servo, int keyframe) {
         transmitKeyFrame(servoAnimations.get(servo).get(keyframe));
-        globals.sendDebugMessage("Keyframe sent - servo == " + servo + " - keyframe == " + keyframe);
+        globals.sendDebugMessage("Keyframe sent - servo == " + servo + " - keyframe == " + keyframe  + " - time to == " + servoAnimations.get(servo).get(keyframe).timeToPosition + " - degrees == " + servoAnimations.get(servo).get(keyframe).degreesToReach);
     }
 
     private void transmitKeyFrame(KeyframePacket keyframePacket) {
@@ -194,7 +213,6 @@ public class communicatorService extends IntentService {
             try {
                 byte[] byteArray = toByteArray(keyframePacket);
                 mOutputStream.write(byteArray);
-                replysExpected++;
             } catch (IOException e) {
                 globals.sendErrorMessage("write failed", e);
             }
@@ -210,22 +228,6 @@ public class communicatorService extends IntentService {
             keyframe.timeToPosition = 1000;
             defaultServoPositions.add(keyframe);
         }
-        //Load the default waving animation, kept here for debugging purposes
-        /*for(byte i = 0; i < globals.ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
-            Vector<KeyframePacket> servoAnimation = new Vector<KeyframePacket>();
-            KeyframePacket keyframe1 = new KeyframePacket();
-            KeyframePacket keyframe2 = new KeyframePacket();
-
-            keyframe1.servoToApplyTo = i;
-            keyframe1.degreesToReach = 90;
-            keyframe1.timeToPosition = 1000;
-            servoAnimation.add(keyframe1);
-            keyframe2.servoToApplyTo = i;
-            keyframe2.degreesToReach = 0;
-            keyframe2.timeToPosition = 1000;
-            servoAnimation.add(keyframe2);
-            servoAnimations.add(i, servoAnimation);
-        }*/
     }
 
     private void resetServoAnimations() {
@@ -235,32 +237,41 @@ public class communicatorService extends IntentService {
     }
 
     public static byte[] toByteArray(KeyframePacket obj) throws IOException {
-        ByteBuffer bytes = ByteBuffer.allocate(4);
+        ByteBuffer bytes = ByteBuffer.allocate(7); // The size of a keyframe packet
         bytes.order(ByteOrder.LITTLE_ENDIAN);
         bytes.put(obj.servoToApplyTo);
-        bytes.put(obj.degreesToReach);
-        bytes.putShort(obj.timeToPosition);
+        bytes.putShort(obj.degreesToReach);
+        bytes.putInt(obj.timeToPosition);
         return bytes.array();
     }
 
-    private void animationCompleteReceived(byte servo) {
+    private void animationComplete(byte servo) {
         if (servo >= globals.ServoTypes.NUMOFSERVOS.ordinal() )
         {
             globals.sendErrorMessage("Data recieve error");
         }
         else if (true/* == callOngoing*/) { // Put back when done!
             servoAnimationInPlay[servo] += 1;
-            /*if (servoAnimationInPlay[servo] >= servoAnimations.get(servo).size()) {
-                servoAnimationInPlay[servo] = 0;
-            }*/ // Put back when done with the Kickstarter version, stops the animations repeating
-            sendKeyframe(servo, servoAnimationInPlay[servo]);
+            if (servoAnimationInPlay[servo] >= servoAnimations.get(servo).size()) {
+                // Put back when done with the Kickstarter version, stops the animations repeating
+                //servoAnimationInPlay[servo] = 0;
+                // And remove this below!
+                resetMotor(servo);
+                globals.sendDebugMessage("Animation finished");
+                motorPlayingAnimation[servo] = false;
+
+            }
+            if(true == motorPlayingAnimation[servo]) {
+                sendKeyframe(servo, servoAnimationInPlay[servo]);
+            }
             sendReset = true;
         } else if (sendReset) //If the call is disconnected, send a signal to reset the motors once
         {
             globals.sendDebugMessage("Animation finishing");
-            resetMotors();
+            resetMotor(servo);
             sendReset = false;
             globals.sendDebugMessage("Animation finished");
+            motorPlayingAnimation[servo] = false;
         }
         else
         {
@@ -274,6 +285,12 @@ public class communicatorService extends IntentService {
         for (byte i = 0; i < globals.ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
             transmitKeyFrame(defaultServoPositions.elementAt(i));
         }
+    }
+
+    public void resetMotor(byte servo) {
+        globals.sendDebugMessage("Resetting motor " + servo);
+        //Make sure the servos are in the default position
+        transmitKeyFrame(defaultServoPositions.elementAt(servo));
     }
 
     @Override
@@ -307,8 +324,8 @@ public class communicatorService extends IntentService {
             mInputStream = new FileInputStream(fd);
             mOutputStream = new FileOutputStream(fd);
 
-            mConnectedThread = new ConnectedThread();
-            mConnectedThread.start();
+            /*mConnectedThread = new ConnectedThread();
+            mConnectedThread.start();*/
 
             setConnectionStatus(true);
 
@@ -324,10 +341,10 @@ public class communicatorService extends IntentService {
         setConnectionStatus(false);
 
         // Cancel any thread currently running a connection
-        if (mConnectedThread != null) {
+        /*if (mConnectedThread != null) {
             mConnectedThread.cancel();
             mConnectedThread = null;
-        }
+        }*/
 
         // Close all streams
         try {
@@ -381,6 +398,7 @@ public class communicatorService extends IntentService {
         }
     };
 
+    /*
     private class ConnectedThread extends Thread {
         byte[] buffer = new byte[1024];
         boolean running;
@@ -398,11 +416,12 @@ public class communicatorService extends IntentService {
                         if (bytes == 1) { // The message is 1 bytes long
                             byte servo = ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN).get();
                             //globals.sendDebugMessage("Message recieved, servo == " + servo);
-                            animationCompleteReceived(servo);
+                            animationComplete(servo);
                             replysExpected--;
-                        } else if (bytes == 2) {
+                        } else if (bytes == 4) {
                             // handshaking message used to work around issue
                             // see http://stackoverflow.com/questions/8275730/proper-way-to-close-a-usb-accessory-connection
+                            // May be unnecessary, remove after everything is done
                             globals.sendDebugMessage("Soft reset recieved");
                             replysExpected--;
                         } else {
@@ -419,6 +438,7 @@ public class communicatorService extends IntentService {
             running = false;
         }
     }
+    */
 
     private final BroadcastReceiver mCallReceiver = new BroadcastReceiver() {
         @Override
@@ -472,7 +492,7 @@ public class communicatorService extends IntentService {
                 globals.Animations.COLUMN_NAME_TIME,
         };
         String sortOrderAnimations =
-                globals.Animations.COLUMN_NAME_KEYFRAME + " DESC";
+                globals.Animations.COLUMN_NAME_KEYFRAME + " ASC";
 
         //Finally place the animation into the array for later processing
         cAnimToActions.moveToFirst();
@@ -503,7 +523,7 @@ public class communicatorService extends IntentService {
                         KeyframePacket keyframe = new KeyframePacket();
                         keyframe.servoToApplyTo = i.byteValue();
                         keyframe.degreesToReach = (byte) cAnimations.getInt(positionColumn);
-                        keyframe.timeToPosition = (short) cAnimations.getInt(timeColumn);
+                        keyframe.timeToPosition = cAnimations.getInt(timeColumn);
                         servoAnimation.add(keyframe);
                         //globals.sendDebugMessage("Servo animation added to motor " + keyframe.servoToApplyTo + ", degrees to reach == " + keyframe.degreesToReach + ", time to position == " + keyframe.timeToPosition);
                     } while (cAnimations.moveToNext());
@@ -541,7 +561,10 @@ public class communicatorService extends IntentService {
         }
 
         for (byte i = 0; i < globals.ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
-            sendKeyframe(i, 0);
+            servoAnimationInPlay[i] = 0;
+            sendKeyframe(i, servoAnimationInPlay[i]);
+            motorPlayingAnimation[i] = true;
         }
+        start = SystemClock.elapsedRealtime();
     }
 }

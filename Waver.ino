@@ -36,17 +36,16 @@ Servo servos[NUMOFSERVOS];
 #define MAX_SERVO_ROTATION 180
 #define SEND_DELAY ((uint32_t)(100)) // Introduce a slight delay between transmissions
 
-uint32_t start = 0;
-uint32_t finished = 0;
-uint32_t timeBetweenProcessing = 0;
+int32_t start = 0;
+int32_t timeBetweenProcessing = 0;
 
 struct KeyFrame {
-  uint8_t degreesToReach; // 0 to 180, 0 is straight down
-  uint8_t previousDegressPosition; // The position of the motor as the next packet comes in
+  int16_t degreesToReach; // 0 to 180, 0 is straight down
+  int16_t previousDegressPosition; // The position of the motor as the next packet comes in
   //The max amount of time that an animation keyframe can take is 65 seconds.
   //We can up it later if we feel like it by upping these variables to uint32_t
-  uint32_t timeToPosition;//Time in micro seconds to reach this point
-  uint32_t timeSpent;//Time spent so far reaching this point (in micro seconds)
+  int32_t timeToPosition;//Time in micro seconds to reach this point
+  int32_t timeSpent;//Time spent so far reaching this point (in micro seconds)
   bool initialised;
   
   KeyFrame() : initialised(false)
@@ -55,15 +54,15 @@ struct KeyFrame {
   }
 };
 struct KeyframePacket {
-  uint8_t servoToApplyTo;
+  int8_t servoToApplyTo;
   //The below two are used to instantiate a KeyFrame object
-  uint8_t degreesToReach;
-  uint16_t timeToPosition;
+  int16_t degreesToReach;
+  int32_t timeToPosition;
   
 };
 KeyFrame servoAnimations[NUMOFSERVOS];
 
-uint32_t handshakeTimer;
+int32_t handshakeTimer;
 
 void setup() {
   wdt_enable(WDTO_2S); // Initialise the watchdog
@@ -84,14 +83,15 @@ void loop() {
     if (!connected) {
       setupServos();
       connected = true;
-      Serial.print(F("\r\nConnected to phone"));
     }
     recieveAnimationCommand();
     
-    if (millis() - handshakeTimer >= 1000) { // Send data every 1s to keep everything open
+    //Try removing this when everything is working!
+    /*if (millis() - handshakeTimer >= 1000) { // Send data every 1s to keep everything open
       handshakeTimer = millis();
+      Serial.print(F("\r\nAttempting to send soft reset"));
       transmitSoftReset();
-    }
+    }*/
   } else {
     if (connected) {
       connected = false;
@@ -124,14 +124,10 @@ void recieveAnimationCommand()
       memcpy(&packet, msg, len);
       KeyFrame frame;
       frame.degreesToReach = packet.degreesToReach;
-      frame.timeToPosition = (uint32_t)(packet.timeToPosition) * 1000;
+      frame.timeToPosition = packet.timeToPosition;
       frame.timeSpent = 0;
       frame.initialised = true;
       servoAnimations[packet.servoToApplyTo] = frame;
-      Serial.print(F("\r\nAnimation command processed - Servo "));
-      Serial.print(packet.servoToApplyTo);
-      Serial.print(F(" - Time to position == "));
-      Serial.print(packet.timeToPosition);
     }
     else
     {
@@ -154,25 +150,23 @@ void sendConfirmation(uint8_t servo)
     Serial.print(rcode, HEX);
   } else if (rcode != hrNAK) {
     //Data sent
-    Serial.print(F("\r\nConfirmation sent - Servo "));
-    Serial.print(servo);
   }
-  //delay(SEND_DELAY);
 }
 
 void transmitSoftReset()
 {
-  uint8_t confirmationBuffer[2];
-  confirmationBuffer[0] = ~0;
-  confirmationBuffer[1] = ~0;
-  uint8_t rcode = adk.SndData(2, confirmationBuffer);
+  uint32_t output = ~0;
+  uint8_t rcode = adk.SndData(sizeof(output), (uint8_t*)&output);
   if (rcode && rcode != hrNAK) {
     //Data error
     Serial.print(F("\r\nData send error: "));
     Serial.print(rcode, HEX);
   } else if (rcode != hrNAK) {
     //Data sent
-    Serial.print(F("\r\nReset sent"));
+  } else {
+    //Unknown data error
+    Serial.print(F("\r\nUnknwon data send error: "));
+    Serial.print(rcode, HEX);
   }
 }
 
@@ -188,9 +182,8 @@ void setupServos()
 
 void processServos()
 {
-  bool signalSent = false;
-  timeBetweenProcessing = micros() - start;
-  start = micros();
+  timeBetweenProcessing = millis() - start;
+  start = millis();
   for(int i = 0; i < NUMOFSERVOS; ++i)
   {
     if(true == servoAnimations[i].initialised)
@@ -206,37 +199,13 @@ void processServos()
       int32_t degreeToUse = map(keyFrameToUse->timeSpent,
                                 0, keyFrameToUse->timeToPosition,
                                 keyFrameToUse->previousDegressPosition, keyFrameToUse->degreesToReach);
-      Serial.print(F("\r\nSending out degree "));
-      Serial.print(degreeToUse);
       sendServoCommand(i, degreeToUse);
       if(keyFrameToUse->timeSpent == keyFrameToUse->timeToPosition)
       {
-        Serial.print(F("\r\nAnimation complete - Servo "));
-        char str[15];
-        sprintf(str, "%d", i);
-        Serial.print(i);
         servoAnimations[i].initialised = false;
         keyFrameToUse->previousDegressPosition = keyFrameToUse->degreesToReach;
-        sendConfirmation(i);
-        signalSent = true;
-      }
-      else
-      {
-        /*Serial.print(F("\r\nProcessing animation frame - Servo "));
-        Serial.print(i);
-        Serial.print(F(" - timeSpent == "));
-        Serial.print(keyFrameToUse->timeSpent);
-        Serial.print(F(" - timeToPosition == "));
-        Serial.print(keyFrameToUse->timeToPosition);
-        Serial.print(F(" - timeBetweenProcessing == "));
-        Serial.print(timeBetweenProcessing);*/
       }
     }
-  }
-  if(false == signalSent)
-  {
-    //Constantly send out output, resolves a strange bug in the firmware
-    //sendConfirmation(~0);
   }
 }
 

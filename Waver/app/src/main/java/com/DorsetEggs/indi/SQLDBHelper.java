@@ -31,13 +31,14 @@ public class SQLDBHelper extends SQLiteOpenHelper {
 
     private static final String TEXT_TYPE = " TEXT";
     private static final String INTEGER_TYPE = " INT";
+    private static final String LONG_TYPE = " LONG";
     private static final String COMMA_SEP = ",";
     private static final String SQL_CREATE_ANIMATION_ENTRIES =
             "CREATE TABLE " + globals.Animations.TABLE_NAME + " (" +
                     globals.Animations.COLUMN_NAME_TITLE + TEXT_TYPE + COMMA_SEP +
                     globals.Animations.COLUMN_NAME_KEYFRAME + INTEGER_TYPE + COMMA_SEP +
                     globals.Animations.COLUMN_NAME_MOTOR + INTEGER_TYPE + COMMA_SEP +
-                    globals.Animations.COLUMN_NAME_TIME + INTEGER_TYPE + COMMA_SEP +
+                    globals.Animations.COLUMN_NAME_TIME + LONG_TYPE + COMMA_SEP +
                     globals.Animations.COLUMN_NAME_POSITION + INTEGER_TYPE +
                     " )";
     private static final String SQL_CREATE_ANIMTOACTIONS_ENTRIES =
