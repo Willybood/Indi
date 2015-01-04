@@ -59,12 +59,15 @@ public final class globals {
         }
     }
 
-    private static Vector<motorIncrementer> kickstarterAnimations = new Vector<motorIncrementer>();
-
     //The different ways animations could be manipulated
     public static enum animOptions {
         CALL_RECIEVED,
-        KICKSTARTER_VIDEO,
+        KICKSTARTER_1_1,
+        KICKSTARTER_2_1,
+        KICKSTARTER_2_2,
+        KICKSTARTER_2_3,
+        KICKSTARTER_2_4,
+        KICKSTARTER_3_1,
         NUM_OF_OPTIONS
     }
 
@@ -125,10 +128,56 @@ public final class globals {
                     null,
                     values);
 
-            // Insert value and default for the Kickstarter video
+            // todo: Remove this for the proper release
+            // Insert value and default for a Kickstarter video
             values = new ContentValues();
-            values.put(AnimToActions.COLUMN_NAME_ACTION, animOptions.KICKSTARTER_VIDEO.ordinal());
-            values.put(AnimToActions.COLUMN_NAME_ANIMATION, "Kickstarter");
+            values.put(AnimToActions.COLUMN_NAME_ACTION, animOptions.KICKSTARTER_1_1.ordinal());
+            values.put(AnimToActions.COLUMN_NAME_ANIMATION, "1-1");
+            // Insert the new row, returning the primary key value of the new row
+            db.insert(
+                    AnimToActions.TABLE_NAME,
+                    null,
+                    values);
+            // Insert value and default for a Kickstarter video
+            values = new ContentValues();
+            values.put(AnimToActions.COLUMN_NAME_ACTION, animOptions.KICKSTARTER_2_1.ordinal());
+            values.put(AnimToActions.COLUMN_NAME_ANIMATION, "2-1");
+            // Insert the new row, returning the primary key value of the new row
+            db.insert(
+                    AnimToActions.TABLE_NAME,
+                    null,
+                    values);
+            // Insert value and default for a Kickstarter video
+            values = new ContentValues();
+            values.put(AnimToActions.COLUMN_NAME_ACTION, animOptions.KICKSTARTER_2_2.ordinal());
+            values.put(AnimToActions.COLUMN_NAME_ANIMATION, "2-2");
+            // Insert the new row, returning the primary key value of the new row
+            db.insert(
+                    AnimToActions.TABLE_NAME,
+                    null,
+                    values);
+            // Insert value and default for a Kickstarter video
+            values = new ContentValues();
+            values.put(AnimToActions.COLUMN_NAME_ACTION, animOptions.KICKSTARTER_2_3.ordinal());
+            values.put(AnimToActions.COLUMN_NAME_ANIMATION, "2-3");
+            // Insert the new row, returning the primary key value of the new row
+            db.insert(
+                    AnimToActions.TABLE_NAME,
+                    null,
+                    values);
+            // Insert value and default for a Kickstarter video
+            values = new ContentValues();
+            values.put(AnimToActions.COLUMN_NAME_ACTION, animOptions.KICKSTARTER_2_4.ordinal());
+            values.put(AnimToActions.COLUMN_NAME_ANIMATION, "2-4");
+            // Insert the new row, returning the primary key value of the new row
+            db.insert(
+                    AnimToActions.TABLE_NAME,
+                    null,
+                    values);
+            // Insert value and default for a Kickstarter video
+            values = new ContentValues();
+            values.put(AnimToActions.COLUMN_NAME_ACTION, animOptions.KICKSTARTER_3_1.ordinal());
+            values.put(AnimToActions.COLUMN_NAME_ANIMATION, "3-1");
             // Insert the new row, returning the primary key value of the new row
             db.insert(
                     AnimToActions.TABLE_NAME,
@@ -160,262 +209,82 @@ public final class globals {
 
     // This is the animation for the kickstarter video.
     private static void setKickstarterAnimation(SQLiteDatabase db) {
-        // kickstarterAnimations[] is coupled with 'addKickstarterFrame'. Not great, but hey ho.
-        // It's only temp code anyway...
-        kickstarterAnimations.clear();
-        for (int i = 0; i < ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
-            kickstarterAnimations.add(new motorIncrementer());
-        }
-/*
-        // Part 1
-        addKickstarterFrame(db, 730, 30, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 730, 5, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 900, 5, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 900, 5, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 900, 80, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 900, 80, ServoTypes.DRARM.ordinal());
+        //Starts at 0:90 of video 1
+        globals.sendDebugMessage("Setting Kickstarter animations");
+        insertKeyframe(db, "1-1", 0, 1000, 60, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "1-1", 0, 1000, 60, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "1-1", 0, 1000, 20, ServoTypes.DLARM.ordinal());
+        insertKeyframe(db, "1-1", 0, 1000, 20, ServoTypes.DRARM.ordinal());
+        insertKeyframe(db, "1-1", 1, 1000, 0, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "1-1", 1, 1000, 0, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "1-1", 1, 1000, 0, ServoTypes.DLARM.ordinal());
+        insertKeyframe(db, "1-1", 1, 1000, 0, ServoTypes.DRARM.ordinal());
 
-        addKickstarterFrame(db, 1192, 20, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 1192, 0, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 1192, 20, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 1192, 0, ServoTypes.DRARM.ordinal());
+        //Starts at 0:00 of video 2
+        insertKeyframe(db, "2-1", 0, 500, 5, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "2-1", 0, 500, 5, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "2-1", 0, 500, 5, ServoTypes.DLARM.ordinal());
+        insertKeyframe(db, "2-1", 0, 500, 5, ServoTypes.DRARM.ordinal());
+        insertKeyframe(db, "2-1", 1, 500, 0, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "2-1", 1, 500, 0, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "2-1", 1, 500, 0, ServoTypes.DLARM.ordinal());
+        insertKeyframe(db, "2-1", 1, 500, 0, ServoTypes.DRARM.ordinal());
 
-        addKickstarterFrame(db, 1307, 45, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 1307, 30, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 1307, 45, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 1307, 30, ServoTypes.DRARM.ordinal());
+        //Starts at 3:50 of video 2
+        insertKeyframe(db, "2-2", 0, 1000, 5, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "2-2", 0, 1000, 0, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "2-2", 0, 1000, 10, ServoTypes.DLARM.ordinal());
+        insertKeyframe(db, "2-2", 0, 1000, 0, ServoTypes.DRARM.ordinal());
+        insertKeyframe(db, "2-2", 1, 500, 0, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "2-2", 1, 500, 0, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "2-2", 1, 500, 0, ServoTypes.DLARM.ordinal());
+        insertKeyframe(db, "2-2", 1, 500, 0, ServoTypes.DRARM.ordinal());
 
-        addKickstarterFrame(db, 1725, 45, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 1725, 30, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 1725, 45, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 1725, 30, ServoTypes.DRARM.ordinal());
+        //Starts at 8:00 of video 2
+        insertKeyframe(db, "2-3", 0, 1000, 0, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "2-3", 0, 1000, 5, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "2-3", 0, 1000, 0, ServoTypes.DLARM.ordinal());
+        insertKeyframe(db, "2-3", 0, 1000, 10, ServoTypes.DRARM.ordinal());
+        insertKeyframe(db, "2-3", 1, 500, 0, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "2-3", 1, 500, 0, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "2-3", 1, 500, 0, ServoTypes.DLARM.ordinal());
+        insertKeyframe(db, "2-3", 1, 500, 0, ServoTypes.DRARM.ordinal());
 
-        addKickstarterFrame(db, 1932, 5, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 1932, 0, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 1932, 5, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 1932, 0, ServoTypes.DRARM.ordinal());
+        //Starts at 17:00 of video 2
+        insertKeyframe(db, "2-4", 0, 750, 60, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "2-4", 0, 750, 60, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "2-4", 0, 750, 40, ServoTypes.DLARM.ordinal());
+        insertKeyframe(db, "2-4", 0, 750, 40, ServoTypes.DRARM.ordinal());
+        insertKeyframe(db, "2-4", 1, 500, 20, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "2-4", 1, 500, 20, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "2-4", 1, 500, 20, ServoTypes.DLARM.ordinal());
+        insertKeyframe(db, "2-4", 1, 500, 20, ServoTypes.DRARM.ordinal());
+        insertKeyframe(db, "2-4", 2, 500, 70, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "2-4", 2, 500, 70, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "2-4", 2, 500, 40, ServoTypes.DLARM.ordinal());
+        insertKeyframe(db, "2-4", 2, 500, 40, ServoTypes.DRARM.ordinal());
+        insertKeyframe(db, "2-4", 3, 500, 70, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "2-4", 3, 500, 70, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "2-4", 3, 500, 40, ServoTypes.DLARM.ordinal());
+        insertKeyframe(db, "2-4", 3, 500, 40, ServoTypes.DRARM.ordinal());
+        insertKeyframe(db, "2-4", 4, 500, 15, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "2-4", 4, 500, 15, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "2-4", 4, 500, 15, ServoTypes.DLARM.ordinal());
+        insertKeyframe(db, "2-4", 4, 500, 15, ServoTypes.DRARM.ordinal());
+        insertKeyframe(db, "2-4", 5, 500, 65, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "2-4", 5, 500, 65, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "2-4", 5, 500, 45, ServoTypes.DLARM.ordinal());
+        insertKeyframe(db, "2-4", 5, 500, 45, ServoTypes.DRARM.ordinal());
+        insertKeyframe(db, "2-4", 6, 750, 0, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "2-4", 6, 750, 0, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "2-4", 6, 750, 0, ServoTypes.DLARM.ordinal());
+        insertKeyframe(db, "2-4", 6, 750, 0, ServoTypes.DRARM.ordinal());
 
-        addKickstarterFrame(db, 3307, 5, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 3307, 0, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 3307, 5, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 3307, 0, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 3750, 30, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 3750, 5, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 3750, 5, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 3750, 0, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 4025, 30, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 4025, 5, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 4025, 5, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 4025, 0, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 4500, 35, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 4500, 30, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 4500, 35, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 4500, 30, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 5000, 10, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 5000, 10, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 5000, 10, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 5000, 10, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 5500, 5, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 5500, 0, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 5500, 5, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 5500, 0, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 6750, 5, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 6750, 0, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 6750, 5, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 6750, 0, ServoTypes.DRARM.ordinal());
-        */
-
-        // Part 2
-        addKickstarterFrame(db, 100, 10, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 100, 10, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 100, 10, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 100, 10, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 800, 10, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 800, 10, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 800, 10, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 800, 10, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 1000, 0, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 1000, 0, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 1000, 0, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 1000, 0, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 2270, 0, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 2270, 0, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 2270, 0, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 2270, 0, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 3200, 10, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 3200, 0, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 3200, 10, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 3200, 0, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 4300, 2, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 4300, 1, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 4300, 2, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 4300, 1, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 4530, 30, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 4830, 90, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 4530, 30, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 4830, 90, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 4830, 0, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 5000, 0, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 4830, 0, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 5000, 0, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 5130, 0, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 5130, 0, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 5130, 0, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 5130, 0, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 5770, 15, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 5770, 5, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 5770, 15, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 5770, 5, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 6700, 5, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 6700, 0, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 6700, 5, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 6700, 0, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 8400, 30, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 8400, 15, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 8400, 30, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 8400, 15, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 10030, 5, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 10030, 0, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 10030, 5, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 10030, 0, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 10600, 10, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 10600, 0, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 10600, 25, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 10600, 15, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 12370, 25, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 12370, 60, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 11530, 10, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 11530, 0, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 11530, 10, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 11530, 0, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 13400, 15, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 13400, 0, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 13400, 15, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 13400, 0, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 13930, 10, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 13930, 0, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 13930, 5, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 13930, 0, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 15930, 20, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 15930, 20, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 15930, 20, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 15930, 20, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 17670, 10, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 17670, 0, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 17670, 10, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 17670, 0, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 18430, 65, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 18430, 40, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 18430, 65, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 18430, 40, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 18670, 40, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 18670, 5, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 18670, 40, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 18670, 5, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 19070, 70, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 19070, 50, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 19070, 70, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 19070, 50, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 19530, 40, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 19530, 5, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 19530, 40, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 19530, 5, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 19770, 65, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 19770, 45, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 19770, 65, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 19770, 45, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 20000, 40, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 20000, 5, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 20000, 40, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 20000, 5, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 20370, 70, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 20370, 55, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 20370, 70, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 20370, 55, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 20930, 10, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 20930, 0, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 20930, 10, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 20930, 0, ServoTypes.DRARM.ordinal());
-/*
-        // Part 3
-        addKickstarterFrame(db, 100, 10, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 100, 0, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 100, 10, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 100, 0, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 1530, 15, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 1530, 15, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 1530, 5, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 1530, 0, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 2400, 20, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 2400, 5, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 2400, 20, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 2400, 5, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 5330, 25, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 5330, 5, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 5330, 25, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 5330, 5, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 6990, 25, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 6990, 5, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 6990, 25, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 6990, 5, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 8030, 25, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 8030, 0, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 8030, 25, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 8030, 0, ServoTypes.DRARM.ordinal());
-
-        addKickstarterFrame(db, 12330, 25, ServoTypes.ULARM.ordinal());
-        addKickstarterFrame(db, 12330, 0, ServoTypes.DLARM.ordinal());
-        addKickstarterFrame(db, 12330, 25, ServoTypes.URARM.ordinal());
-        addKickstarterFrame(db, 12330, 0, ServoTypes.DRARM.ordinal());
-        */
-    }
-
-    private static void addKickstarterFrame(SQLiteDatabase db, long timeStamp, int position, int motor) {
-        final String name = "Kickstarter";
-        motorIncrementer incrementer = kickstarterAnimations.get(motor);
-        insertKeyframe(db,
-                name, incrementer.keyframe, (int)(timeStamp - incrementer.lastTimeStamp), position, motor);
-        incrementer.keyframe = incrementer.keyframe + 1;
-        incrementer.lastTimeStamp = timeStamp;
-        kickstarterAnimations.set(motor, incrementer);
+        //Starts at 2.25 of video 3
+        insertKeyframe(db, "3-1", 0, 750, 10, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "3-1", 0, 750, 10, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "3-1", 1, 750, 0, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "3-1", 1, 750, 0, ServoTypes.URARM.ordinal());
     }
 
     private static void insertKeyframe(SQLiteDatabase db,

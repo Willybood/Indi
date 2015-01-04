@@ -37,6 +37,8 @@ public class SQLService extends IntentService {
     @Override
     public void onCreate() {
         super.onCreate();
+        globals.dbHelper = new SQLDBHelper(this.getBaseContext());
+        globals.checkDatabaseHasEntries();
     }
 
     /**
@@ -46,7 +48,6 @@ public class SQLService extends IntentService {
      */
     @Override
     protected void onHandleIntent(Intent intent) {
-        globals.dbHelper = new SQLDBHelper(this.getBaseContext());
-        globals.checkDatabaseHasEntries();
+
     }
 }

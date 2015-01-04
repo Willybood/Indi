@@ -29,19 +29,16 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.telephony.TelephonyManager;
-import android.widget.TextView;
 
 import android.hardware.usb.UsbAccessory;
 import android.hardware.usb.UsbManager;
 
 import java.io.FileDescriptor;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -71,7 +68,6 @@ public class communicatorService extends IntentService {
 
     UsbAccessory mAccessory;
     ParcelFileDescriptor mFileDescriptor;
-    FileInputStream mInputStream;
     FileOutputStream mOutputStream;
     private UsbManager mUsbManager;
     private PendingIntent mPermissionIntent;
@@ -110,8 +106,13 @@ public class communicatorService extends IntentService {
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            int message = intent.getIntExtra("message", 0);
+            if(0 == message)
+            {
+                globals.sendErrorMessage("Broadcast error, 0 sent");
+            }
             globals.sendDebugMessage("Starting Kickstarter animation");
-            sendAnimation(globals.animOptions.KICKSTARTER_VIDEO.ordinal());
+            sendAnimation(message);
         }
     };
 
@@ -151,6 +152,7 @@ public class communicatorService extends IntentService {
                 launchNotification(mId, "Indi connected");
                 //Initialise the database
                 db = globals.dbHelper.getWritableDatabase();
+                resetMotors();
             } else {
                 globals.sendDebugMessage("No USB permission");
                 setConnectionStatus(false);
@@ -169,6 +171,8 @@ public class communicatorService extends IntentService {
         while (true)
         {
             checkAnimation();
+            // Used for debugging USB errors, we activate this and see exactly where it breaks.
+            //transmitSingleByte();
         }
     }
 
@@ -214,7 +218,21 @@ public class communicatorService extends IntentService {
                 byte[] byteArray = toByteArray(keyframePacket);
                 mOutputStream.write(byteArray);
             } catch (IOException e) {
-                globals.sendErrorMessage("write failed", e);
+                //globals.sendErrorMessage("write failed", e);
+                globals.sendErrorMessage("write failed, probably an ENODEV");
+            }
+        }
+    }
+
+    // Used for debugging USB errors
+    private void transmitSingleByte() {
+        if (mOutputStream != null) {
+            try {
+                mOutputStream.write(5);
+            } catch (IOException e) {
+                //globals.sendErrorMessage("write failed", e);
+                globals.sendErrorMessage("write failed when transmitting single byte, probably an ENODEV");
+                setConnectionStatus(false);
             }
         }
     }
@@ -227,12 +245,6 @@ public class communicatorService extends IntentService {
             keyframe.degreesToReach = 0;
             keyframe.timeToPosition = 1000;
             defaultServoPositions.add(keyframe);
-        }
-    }
-
-    private void resetServoAnimations() {
-        for (byte i = 0; i < globals.ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
-            transmitKeyFrame(defaultServoPositions.elementAt(i));
         }
     }
 
@@ -283,12 +295,12 @@ public class communicatorService extends IntentService {
         globals.sendDebugMessage("Resetting motors");
         //Make sure the servos are in the default position
         for (byte i = 0; i < globals.ServoTypes.NUMOFSERVOS.ordinal(); ++i) {
-            transmitKeyFrame(defaultServoPositions.elementAt(i));
+            resetMotor(i);
         }
     }
 
     public void resetMotor(byte servo) {
-        globals.sendDebugMessage("Resetting motor " + servo);
+        //globals.sendDebugMessage("Resetting motor " + servo);
         //Make sure the servos are in the default position
         transmitKeyFrame(defaultServoPositions.elementAt(servo));
     }
@@ -321,11 +333,7 @@ public class communicatorService extends IntentService {
         if (mFileDescriptor != null) {
             mAccessory = accessory;
             FileDescriptor fd = mFileDescriptor.getFileDescriptor();
-            mInputStream = new FileInputStream(fd);
             mOutputStream = new FileOutputStream(fd);
-
-            /*mConnectedThread = new ConnectedThread();
-            mConnectedThread.start();*/
 
             setConnectionStatus(true);
 
@@ -340,20 +348,7 @@ public class communicatorService extends IntentService {
         globals.sendDebugMessage("USB accessory closing");
         setConnectionStatus(false);
 
-        // Cancel any thread currently running a connection
-        /*if (mConnectedThread != null) {
-            mConnectedThread.cancel();
-            mConnectedThread = null;
-        }*/
-
         // Close all streams
-        try {
-            if (mInputStream != null)
-                mInputStream.close();
-        } catch (Exception ignored) {
-        } finally {
-            mInputStream = null;
-        }
         try {
             if (mOutputStream != null)
                 mOutputStream.close();
@@ -398,48 +393,6 @@ public class communicatorService extends IntentService {
         }
     };
 
-    /*
-    private class ConnectedThread extends Thread {
-        byte[] buffer = new byte[1024];
-        boolean running;
-
-        ConnectedThread() {
-            running = true;
-        }
-
-        public void run() {
-            while (running) {
-                try {
-                    if(replysExpected > 0) {
-                        int bytes = mInputStream.read(buffer);
-                        globals.sendDebugMessage("Checking data");
-                        if (bytes == 1) { // The message is 1 bytes long
-                            byte servo = ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN).get();
-                            //globals.sendDebugMessage("Message recieved, servo == " + servo);
-                            animationComplete(servo);
-                            replysExpected--;
-                        } else if (bytes == 4) {
-                            // handshaking message used to work around issue
-                            // see http://stackoverflow.com/questions/8275730/proper-way-to-close-a-usb-accessory-connection
-                            // May be unnecessary, remove after everything is done
-                            globals.sendDebugMessage("Soft reset recieved");
-                            replysExpected--;
-                        } else {
-                            globals.sendDebugMessage("Incorrect data length == " + bytes);
-                        }
-                    }
-                } catch (Exception e) {
-                    //globals.sendErrorMessage("Data read error", e);
-                }
-            }
-        }
-
-        public void cancel() {
-            running = false;
-        }
-    }
-    */
-
     private final BroadcastReceiver mCallReceiver = new BroadcastReceiver() {
         @Override
         //Call broadcast event
@@ -459,7 +412,7 @@ public class communicatorService extends IntentService {
                     TelephonyManager.EXTRA_STATE_OFFHOOK)) {
                 globals.sendDebugMessage("Detected call hangup event");
                 callOngoing = false;
-                resetServoAnimations();
+                resetMotors();
             }
         }
     };
@@ -532,7 +485,7 @@ public class communicatorService extends IntentService {
                 }
                 else
                 {
-                    globals.sendDebugMessage("moveToFirst failed, cursor empty");
+                    globals.sendErrorMessage("moveToFirst failed, cursor empty");
                     globals.sendDebugMessage("Stored animations ==");
                     String[] title = {
                             globals.Animations.COLUMN_NAME_TITLE
@@ -551,7 +504,7 @@ public class communicatorService extends IntentService {
                     cColumnNames.moveToFirst();
                     do {
                         globals.sendDebugMessage("\t" + cColumnNames.getString(globals.Animations.COLUMN_INDEX_TITLE));
-                    } while (cAnimations.moveToNext());
+                    } while (cColumnNames.moveToNext());
                 }
             }
             else

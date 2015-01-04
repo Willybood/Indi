@@ -55,6 +55,7 @@
 
         <service
             android:name=".communicatorService"
+            android:launchMode="singleTask"
             android:exported="false" />
         <service
             android:name=".SQLService"

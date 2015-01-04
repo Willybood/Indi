@@ -25,10 +25,7 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.os.Bundle;
 import android.content.Intent;
-import android.os.Messenger;
-
-import java.util.Timer;
-import java.util.TimerTask;
+import android.os.Handler;
 
 public class main extends Activity {
     @Override
@@ -37,9 +34,11 @@ public class main extends Activity {
         setContentView(R.layout.main);
 
         // Reset the services and start the SQL service
-        Intent SQLIntent = new Intent(this, SQLService.class);
+        //Intent SQLIntent = new Intent(this, SQLService.class);
         //SQLIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK); // Clears all threads and starts this one
-        this.startService(SQLIntent);
+        //this.startService(SQLIntent);
+        globals.dbHelper = new SQLDBHelper(this.getBaseContext());
+        globals.checkDatabaseHasEntries();
 
         // Start the communicator service
         Intent commIntent = new Intent(this, communicatorService.class);
@@ -51,23 +50,21 @@ public class main extends Activity {
         super.onStart();
 
         //Show splash screen for 3 seconds
-        Timer t = new Timer();
-        t.schedule(new TimerTask() {
-
-            @Override
-            public void run() {
-                // Put back for the non-kickstarter version
-                //checkUSB();
-                videoGo();
-            }
-        }, 3000);
+        Handler handler = new Handler();
+        handler.postDelayed(runnable, 3000);
     }
+
+    private Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            // Put back for the non-kickstarter version
+            //checkUSB();
+            videoGo();
+        }
+    };
 
     private void videoGo()
     {
-        /*Intent commIntent = new Intent(this, communicatorService.class);
-        this.startService(commIntent);*/
-        globals.sendDebugMessage("Starting film");
         Intent filmPlayerIntent = new Intent(this, filmPlayer.class);
         startActivity(filmPlayerIntent);
         // The kickstarter animation will start when the confirmation is recieved from

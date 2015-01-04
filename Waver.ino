@@ -85,14 +85,7 @@ void loop() {
       connected = true;
     }
     recieveAnimationCommand();
-    
-    //Try removing this when everything is working!
-    /*if (millis() - handshakeTimer >= 1000) { // Send data every 1s to keep everything open
-      handshakeTimer = millis();
-      Serial.print(F("\r\nAttempting to send soft reset"));
-      transmitSoftReset();
-    }*/
-  } else {
+    } else {
     if (connected) {
       connected = false;
       Serial.print(F("\r\nDisconnected from phone"));
@@ -118,6 +111,9 @@ void recieveAnimationCommand()
     } else if (len == 0)
     {
       //No input recieved
+    } else if (len == 1)
+    {
+      //Dummy input, ignore
     } else if (len == packetLen) { //If the recieved packet length is the same as the predicted length
       //Data recieved
       KeyframePacket packet;
@@ -150,23 +146,6 @@ void sendConfirmation(uint8_t servo)
     Serial.print(rcode, HEX);
   } else if (rcode != hrNAK) {
     //Data sent
-  }
-}
-
-void transmitSoftReset()
-{
-  uint32_t output = ~0;
-  uint8_t rcode = adk.SndData(sizeof(output), (uint8_t*)&output);
-  if (rcode && rcode != hrNAK) {
-    //Data error
-    Serial.print(F("\r\nData send error: "));
-    Serial.print(rcode, HEX);
-  } else if (rcode != hrNAK) {
-    //Data sent
-  } else {
-    //Unknown data error
-    Serial.print(F("\r\nUnknwon data send error: "));
-    Serial.print(rcode, HEX);
   }
 }
 

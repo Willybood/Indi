@@ -22,13 +22,10 @@ package com.DorsetEggs.indi;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -36,7 +33,6 @@ import android.widget.VideoView;
 
 
 public class filmPlayer extends Activity {
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,16 +50,80 @@ public class filmPlayer extends Activity {
                 (VideoView) findViewById(R.id.videoView);
 
         Uri kickstarterVideo =
+                /*
+                // video 1
+                Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.face_video_part_one);
+                */
+                // video 2
                 Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.face_video_part_two);
+                /*
+                // video 3
+                Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.face_video_part_three);
+                */
         videoView.setVideoURI(kickstarterVideo);
 
+        Thread thread = new Thread() {
+            int currentAnimation = 0;
+            @Override
+            public void run() {
+                try {
+                    while(true) {
+                        sleep(250); // Every 1/4 a second
+                        // getCurrentPosition returns the current time in ms, its being used to return the correct animation for each position
+                        /*
+                        // video 1
+                        if ((videoView.getCurrentPosition() > 1000) && (0 == currentAnimation)) {
+                            sendMessage(globals.animOptions.KICKSTARTER_1_1.ordinal());
+                            currentAnimation++;
+                        }
+                        */
+                        // video 2
+                        if((videoView.getCurrentPosition() > 0) && (0 == currentAnimation)) {
+                            sendMessage(globals.animOptions.KICKSTARTER_2_1.ordinal());
+                            currentAnimation++;
+                        }
+                        if((videoView.getCurrentPosition() > 3500) && (1 == currentAnimation)) {
+                            sendMessage(globals.animOptions.KICKSTARTER_2_2.ordinal());
+                            currentAnimation++;
+                        }
+                        if((videoView.getCurrentPosition() > 8000) && (2 == currentAnimation)) {
+                            sendMessage(globals.animOptions.KICKSTARTER_2_3.ordinal());
+                            currentAnimation++;
+                        }
+                        if((videoView.getCurrentPosition() > 17000) && (3 == currentAnimation)) {
+                            sendMessage(globals.animOptions.KICKSTARTER_2_4.ordinal());
+                            currentAnimation++;
+                        }
+                        /*
+                        // video 3
+                        if((videoView.getCurrentPosition() > 2250) && (0 == currentAnimation)) {
+                            sendMessage(globals.animOptions.KICKSTARTER_3_1.ordinal());
+                            currentAnimation++;
+                        }
+                        */
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+
+        thread.start();
+
+        videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer vmp) {
+                globals.sendDebugMessage("Ending film");
+            }
+        });
+
         videoView.start();
-        // When the video has started, send the signal to start the animation to the communicator service
-        sendMessage();
+        globals.sendDebugMessage("Starting film");
     }
 
-    private void sendMessage() {
+    private void sendMessage(int animation) {
         Intent intent = new Intent("start-kickstarter-anim");
+        intent.putExtra("message", animation);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 }
