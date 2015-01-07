@@ -148,7 +148,7 @@ public class communicatorService extends IntentService {
         if (accessory != null) {
             globals.sendDebugMessage("USB ready");
             if (mUsbManager.hasPermission(accessory)) {
-                openAccessory(accessory);
+                //openAccessory(accessory);
                 launchNotification(mId, "Indi connected");
                 //Initialise the database
                 db = globals.dbHelper.getWritableDatabase();
@@ -213,13 +213,22 @@ public class communicatorService extends IntentService {
     }
 
     private void transmitKeyFrame(KeyframePacket keyframePacket) {
-        if (mOutputStream != null) {
-            try {
-                byte[] byteArray = toByteArray(keyframePacket);
-                mOutputStream.write(byteArray);
-            } catch (IOException e) {
-                //globals.sendErrorMessage("write failed", e);
-                globals.sendErrorMessage("write failed, probably an ENODEV");
+        UsbAccessory[] accessories = mUsbManager.getAccessoryList();
+        UsbAccessory accessory = (accessories == null ? null : accessories[0]);
+        if (accessory != null) {
+            globals.sendDebugMessage("Opening through transmitKeyFrame");
+            if (mUsbManager.hasPermission(accessory)) {
+                openAccessory(accessory);
+                if (mOutputStream != null) {
+                    try {
+                        byte[] byteArray = toByteArray(keyframePacket);
+                        mOutputStream.write(byteArray);
+                    } catch (IOException e) {
+                        //globals.sendErrorMessage("write failed", e);
+                        globals.sendErrorMessage("write failed, probably an ENODEV");
+                    }
+                }
+                closeAccessory();
             }
         }
     }
@@ -346,7 +355,7 @@ public class communicatorService extends IntentService {
 
     private void closeAccessory() {
         globals.sendDebugMessage("USB accessory closing");
-        setConnectionStatus(false);
+        //setConnectionStatus(false);
 
         // Close all streams
         try {
@@ -376,7 +385,7 @@ public class communicatorService extends IntentService {
                     UsbAccessory accessory = intent.getParcelableExtra
                             (UsbManager.EXTRA_ACCESSORY);
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
-                        openAccessory(accessory);
+                        //openAccessory(accessory);
                     } else {
                         globals.sendDebugMessage("Permission denied for accessory " + accessory);
                     }

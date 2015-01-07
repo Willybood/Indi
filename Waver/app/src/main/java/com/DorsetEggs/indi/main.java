@@ -59,6 +59,7 @@ public class main extends Activity {
         public void run() {
             // Put back for the non-kickstarter version
             //checkUSB();
+            globals.sendDebugMessage("Launching video player");
             videoGo();
         }
     };
