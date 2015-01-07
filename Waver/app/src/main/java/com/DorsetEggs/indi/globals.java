@@ -66,7 +66,6 @@ public final class globals {
         KICKSTARTER_2_1,
         KICKSTARTER_2_2,
         KICKSTARTER_2_3,
-        KICKSTARTER_2_4,
         KICKSTARTER_3_1,
         NUM_OF_OPTIONS
     }
@@ -167,15 +166,6 @@ public final class globals {
                     values);
             // Insert value and default for a Kickstarter video
             values = new ContentValues();
-            values.put(AnimToActions.COLUMN_NAME_ACTION, animOptions.KICKSTARTER_2_4.ordinal());
-            values.put(AnimToActions.COLUMN_NAME_ANIMATION, "2-4");
-            // Insert the new row, returning the primary key value of the new row
-            db.insert(
-                    AnimToActions.TABLE_NAME,
-                    null,
-                    values);
-            // Insert value and default for a Kickstarter video
-            values = new ContentValues();
             values.put(AnimToActions.COLUMN_NAME_ACTION, animOptions.KICKSTARTER_3_1.ordinal());
             values.put(AnimToActions.COLUMN_NAME_ANIMATION, "3-1");
             // Insert the new row, returning the primary key value of the new row
@@ -220,65 +210,55 @@ public final class globals {
         insertKeyframe(db, "1-1", 1, 1000, 0, ServoTypes.DLARM.ordinal());
         insertKeyframe(db, "1-1", 1, 1000, 0, ServoTypes.DRARM.ordinal());
 
-        //Starts at 0:00 of video 2
-        insertKeyframe(db, "2-1", 0, 500, 10, ServoTypes.ULARM.ordinal());
-        insertKeyframe(db, "2-1", 0, 500, 10, ServoTypes.URARM.ordinal());
-        insertKeyframe(db, "2-1", 0, 500, 10, ServoTypes.DLARM.ordinal());
-        insertKeyframe(db, "2-1", 0, 500, 10, ServoTypes.DRARM.ordinal());
+        //Starts at 3:50 of video 2
+        insertKeyframe(db, "2-1", 0, 1000, 10, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "2-1", 0, 1000, 0, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "2-1", 0, 1000, 20, ServoTypes.DLARM.ordinal());
+        insertKeyframe(db, "2-1", 0, 1000, 0, ServoTypes.DRARM.ordinal());
         insertKeyframe(db, "2-1", 1, 500, 0, ServoTypes.ULARM.ordinal());
         insertKeyframe(db, "2-1", 1, 500, 0, ServoTypes.URARM.ordinal());
         insertKeyframe(db, "2-1", 1, 500, 0, ServoTypes.DLARM.ordinal());
         insertKeyframe(db, "2-1", 1, 500, 0, ServoTypes.DRARM.ordinal());
 
-        //Starts at 3:50 of video 2
-        insertKeyframe(db, "2-2", 0, 1000, 10, ServoTypes.ULARM.ordinal());
-        insertKeyframe(db, "2-2", 0, 1000, 0, ServoTypes.URARM.ordinal());
-        insertKeyframe(db, "2-2", 0, 1000, 20, ServoTypes.DLARM.ordinal());
-        insertKeyframe(db, "2-2", 0, 1000, 0, ServoTypes.DRARM.ordinal());
+        //Starts at 8:00 of video 2
+        insertKeyframe(db, "2-2", 0, 1000, 0, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "2-2", 0, 1000, 10, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "2-2", 0, 1000, 0, ServoTypes.DLARM.ordinal());
+        insertKeyframe(db, "2-2", 0, 1000, 20, ServoTypes.DRARM.ordinal());
         insertKeyframe(db, "2-2", 1, 500, 0, ServoTypes.ULARM.ordinal());
         insertKeyframe(db, "2-2", 1, 500, 0, ServoTypes.URARM.ordinal());
         insertKeyframe(db, "2-2", 1, 500, 0, ServoTypes.DLARM.ordinal());
         insertKeyframe(db, "2-2", 1, 500, 0, ServoTypes.DRARM.ordinal());
 
-        //Starts at 8:00 of video 2
-        insertKeyframe(db, "2-3", 0, 1000, 0, ServoTypes.ULARM.ordinal());
-        insertKeyframe(db, "2-3", 0, 1000, 10, ServoTypes.URARM.ordinal());
-        insertKeyframe(db, "2-3", 0, 1000, 0, ServoTypes.DLARM.ordinal());
-        insertKeyframe(db, "2-3", 0, 1000, 20, ServoTypes.DRARM.ordinal());
-        insertKeyframe(db, "2-3", 1, 500, 0, ServoTypes.ULARM.ordinal());
-        insertKeyframe(db, "2-3", 1, 500, 0, ServoTypes.URARM.ordinal());
-        insertKeyframe(db, "2-3", 1, 500, 0, ServoTypes.DLARM.ordinal());
-        insertKeyframe(db, "2-3", 1, 500, 0, ServoTypes.DRARM.ordinal());
-
         //Starts at 17:00 of video 2
-        insertKeyframe(db, "2-4", 0, 750, 60, ServoTypes.ULARM.ordinal());
-        insertKeyframe(db, "2-4", 0, 750, 60, ServoTypes.URARM.ordinal());
-        insertKeyframe(db, "2-4", 0, 750, 40, ServoTypes.DLARM.ordinal());
-        insertKeyframe(db, "2-4", 0, 750, 40, ServoTypes.DRARM.ordinal());
-        insertKeyframe(db, "2-4", 1, 500, 20, ServoTypes.ULARM.ordinal());
-        insertKeyframe(db, "2-4", 1, 500, 20, ServoTypes.URARM.ordinal());
-        insertKeyframe(db, "2-4", 1, 500, 20, ServoTypes.DLARM.ordinal());
-        insertKeyframe(db, "2-4", 1, 500, 20, ServoTypes.DRARM.ordinal());
-        insertKeyframe(db, "2-4", 2, 500, 70, ServoTypes.ULARM.ordinal());
-        insertKeyframe(db, "2-4", 2, 500, 70, ServoTypes.URARM.ordinal());
-        insertKeyframe(db, "2-4", 2, 500, 40, ServoTypes.DLARM.ordinal());
-        insertKeyframe(db, "2-4", 2, 500, 40, ServoTypes.DRARM.ordinal());
-        insertKeyframe(db, "2-4", 3, 500, 70, ServoTypes.ULARM.ordinal());
-        insertKeyframe(db, "2-4", 3, 500, 70, ServoTypes.URARM.ordinal());
-        insertKeyframe(db, "2-4", 3, 500, 40, ServoTypes.DLARM.ordinal());
-        insertKeyframe(db, "2-4", 3, 500, 40, ServoTypes.DRARM.ordinal());
-        insertKeyframe(db, "2-4", 4, 500, 15, ServoTypes.ULARM.ordinal());
-        insertKeyframe(db, "2-4", 4, 500, 15, ServoTypes.URARM.ordinal());
-        insertKeyframe(db, "2-4", 4, 500, 15, ServoTypes.DLARM.ordinal());
-        insertKeyframe(db, "2-4", 4, 500, 15, ServoTypes.DRARM.ordinal());
-        insertKeyframe(db, "2-4", 5, 500, 65, ServoTypes.ULARM.ordinal());
-        insertKeyframe(db, "2-4", 5, 500, 65, ServoTypes.URARM.ordinal());
-        insertKeyframe(db, "2-4", 5, 500, 45, ServoTypes.DLARM.ordinal());
-        insertKeyframe(db, "2-4", 5, 500, 45, ServoTypes.DRARM.ordinal());
-        insertKeyframe(db, "2-4", 6, 750, 0, ServoTypes.ULARM.ordinal());
-        insertKeyframe(db, "2-4", 6, 750, 0, ServoTypes.URARM.ordinal());
-        insertKeyframe(db, "2-4", 6, 750, 0, ServoTypes.DLARM.ordinal());
-        insertKeyframe(db, "2-4", 6, 750, 0, ServoTypes.DRARM.ordinal());
+        insertKeyframe(db, "2-3", 0, 750, 60, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "2-3", 0, 750, 60, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "2-3", 0, 750, 40, ServoTypes.DLARM.ordinal());
+        insertKeyframe(db, "2-3", 0, 750, 40, ServoTypes.DRARM.ordinal());
+        insertKeyframe(db, "2-3", 1, 500, 20, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "2-3", 1, 500, 20, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "2-3", 1, 500, 20, ServoTypes.DLARM.ordinal());
+        insertKeyframe(db, "2-3", 1, 500, 20, ServoTypes.DRARM.ordinal());
+        insertKeyframe(db, "2-3", 2, 500, 70, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "2-3", 2, 500, 70, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "2-3", 2, 500, 40, ServoTypes.DLARM.ordinal());
+        insertKeyframe(db, "2-3", 2, 500, 40, ServoTypes.DRARM.ordinal());
+        insertKeyframe(db, "2-3", 3, 500, 70, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "2-3", 3, 500, 70, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "2-3", 3, 500, 40, ServoTypes.DLARM.ordinal());
+        insertKeyframe(db, "2-3", 3, 500, 40, ServoTypes.DRARM.ordinal());
+        insertKeyframe(db, "2-3", 4, 500, 15, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "2-3", 4, 500, 15, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "2-3", 4, 500, 15, ServoTypes.DLARM.ordinal());
+        insertKeyframe(db, "2-3", 4, 500, 15, ServoTypes.DRARM.ordinal());
+        insertKeyframe(db, "2-3", 5, 500, 65, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "2-3", 5, 500, 65, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "2-3", 5, 500, 45, ServoTypes.DLARM.ordinal());
+        insertKeyframe(db, "2-3", 5, 500, 45, ServoTypes.DRARM.ordinal());
+        insertKeyframe(db, "2-3", 6, 750, 0, ServoTypes.ULARM.ordinal());
+        insertKeyframe(db, "2-3", 6, 750, 0, ServoTypes.URARM.ordinal());
+        insertKeyframe(db, "2-3", 6, 750, 0, ServoTypes.DLARM.ordinal());
+        insertKeyframe(db, "2-3", 6, 750, 0, ServoTypes.DRARM.ordinal());
 
         //Starts at 2.25 of video 3
         insertKeyframe(db, "3-1", 0, 750, 10, ServoTypes.ULARM.ordinal());

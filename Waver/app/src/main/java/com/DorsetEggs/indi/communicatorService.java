@@ -149,7 +149,6 @@ public class communicatorService extends IntentService {
             globals.sendDebugMessage("USB ready");
             if (mUsbManager.hasPermission(accessory)) {
                 //openAccessory(accessory);
-                launchNotification(mId, "Indi connected");
                 //Initialise the database
                 db = globals.dbHelper.getWritableDatabase();
                 resetMotors();
@@ -192,7 +191,8 @@ public class communicatorService extends IntentService {
         }
     }
 
-    private void launchNotification(int id, String notificationText) {
+    // Launches a notification and sets the communicator to the foreground.
+    private void setToForeground(int id, String notificationText) {
         if (mNotificationManager == null) {
             mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         }
@@ -203,7 +203,7 @@ public class communicatorService extends IntentService {
         NotificationCompat.InboxStyle inboxStyle =
                 new NotificationCompat.InboxStyle();
         mBuilder.setStyle(inboxStyle);
-        mNotificationManager.notify(id, mBuilder.build());
+        startForeground(id, mBuilder.build());
     }
 
     //Wrapper class for the below 'transmitKeyFrame'
@@ -327,12 +327,13 @@ public class communicatorService extends IntentService {
 
     private void setConnectionStatus(boolean connected) {
         //exit when disconnected
+        if (connected == true)
+        {
+            setToForeground(mId, "Indi connected");
+        }
         if (connected == false) {
             globals.sendDebugMessage("Exiting due to disconnection");
-            if (mNotificationManager != null) {
-                mNotificationManager.cancel(mId);
-                globals.sendDebugMessage("Closing notification");
-            }
+            stopForeground(true);
             stopSelf();
         }
     }
