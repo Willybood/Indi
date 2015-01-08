@@ -211,7 +211,7 @@ public final class globals {
         insertKeyframe(db, "1-1", 1, 1000, 0, ServoTypes.DRARM.ordinal());
 
         //Starts at 3:50 of video 2
-        insertKeyframe(db, "2-1", 0, 1000, 10, ServoTypes.ULARM.ordinal());
+        /*insertKeyframe(db, "2-1", 0, 1000, 10, ServoTypes.ULARM.ordinal());
         insertKeyframe(db, "2-1", 0, 1000, 0, ServoTypes.URARM.ordinal());
         insertKeyframe(db, "2-1", 0, 1000, 20, ServoTypes.DLARM.ordinal());
         insertKeyframe(db, "2-1", 0, 1000, 0, ServoTypes.DRARM.ordinal());
@@ -228,7 +228,7 @@ public final class globals {
         insertKeyframe(db, "2-2", 1, 500, 0, ServoTypes.ULARM.ordinal());
         insertKeyframe(db, "2-2", 1, 500, 0, ServoTypes.URARM.ordinal());
         insertKeyframe(db, "2-2", 1, 500, 0, ServoTypes.DLARM.ordinal());
-        insertKeyframe(db, "2-2", 1, 500, 0, ServoTypes.DRARM.ordinal());
+        insertKeyframe(db, "2-2", 1, 500, 0, ServoTypes.DRARM.ordinal());*/
 
         //Starts at 17:00 of video 2
         insertKeyframe(db, "2-3", 0, 750, 60, ServoTypes.ULARM.ordinal());

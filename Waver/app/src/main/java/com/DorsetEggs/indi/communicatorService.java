@@ -151,7 +151,6 @@ public class communicatorService extends IntentService {
                 //openAccessory(accessory);
                 //Initialise the database
                 db = globals.dbHelper.getWritableDatabase();
-                resetMotors();
             } else {
                 globals.sendDebugMessage("No USB permission");
                 setConnectionStatus(false);
@@ -192,7 +191,7 @@ public class communicatorService extends IntentService {
     }
 
     // Launches a notification and sets the communicator to the foreground.
-    private void setToForeground(int id, String notificationText) {
+    private void launchNotification(int id, String notificationText) {
         if (mNotificationManager == null) {
             mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         }
@@ -203,7 +202,7 @@ public class communicatorService extends IntentService {
         NotificationCompat.InboxStyle inboxStyle =
                 new NotificationCompat.InboxStyle();
         mBuilder.setStyle(inboxStyle);
-        startForeground(id, mBuilder.build());
+        mNotificationManager.notify(id, mBuilder.build());
     }
 
     //Wrapper class for the below 'transmitKeyFrame'
@@ -317,6 +316,7 @@ public class communicatorService extends IntentService {
     @Override
     public void onDestroy() {
         globals.sendDebugMessage("USB communicator closing");
+        setConnectionStatus(false);
         closeAccessory();
         unregisterReceiver(mUsbReceiver);
         unregisterReceiver(mCallReceiver);
@@ -329,11 +329,14 @@ public class communicatorService extends IntentService {
         //exit when disconnected
         if (connected == true)
         {
-            setToForeground(mId, "Indi connected");
+            launchNotification(mId, "Indi connected");
         }
         if (connected == false) {
             globals.sendDebugMessage("Exiting due to disconnection");
-            stopForeground(true);
+            if (mNotificationManager != null) {
+                mNotificationManager.cancel(mId);
+                globals.sendDebugMessage("Closing notification");
+            }
             stopSelf();
         }
     }
@@ -398,6 +401,7 @@ public class communicatorService extends IntentService {
                 if (accessory != null && accessory.equals(mAccessory)) {
                     globals.sendDebugMessage("Accessory detached");
                     closeAccessory();
+                    setConnectionStatus(false);
                 }
             }
         }

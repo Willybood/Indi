@@ -78,15 +78,15 @@ public class filmPlayer extends Activity {
                         }
                         */
                         // video 2
-                        if((videoView.getCurrentPosition() > 3500) && (0 == currentAnimation)) {
+                        /*if((videoView.getCurrentPosition() > 3500) && (0 == currentAnimation)) {
                             sendMessage(globals.animOptions.KICKSTARTER_2_1.ordinal());
                             currentAnimation++;
                         }
                         if((videoView.getCurrentPosition() > 8000) && (1 == currentAnimation)) {
                             sendMessage(globals.animOptions.KICKSTARTER_2_2.ordinal());
                             currentAnimation++;
-                        }
-                        if((videoView.getCurrentPosition() > 17000) && (2 == currentAnimation)) {
+                        }*/
+                        if ((videoView.getCurrentPosition() > 2300) && (/*2*/0 == currentAnimation)) {
                             sendMessage(globals.animOptions.KICKSTARTER_2_3.ordinal());
                             currentAnimation++;
                         }
