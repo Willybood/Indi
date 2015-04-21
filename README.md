@@ -1,6 +1,6 @@
 Indi is a robotic phone dock designed to signal the user when a call is coming in, consisting of an android app, an Arduino source code, and a physical device dock that bridges everything together.
 
-The Arduino and Android code is released here under the GPLv3, with detailed instructions on how to upload the code into the physical device coming later when some of the prototype components have come in. Until then, you can test this code using an Arduino Uno, a USB host shield, and a series of servo motors.
+The Arduino and Android code is released here under the GPLv3, with detailed instructions on how to upload the code into the physical device coming later when its available for sale. Until then, you can test this code using an Arduino Uno, a USB host shield, and a series of servo motors.
 
 The model files I am using for the dock are available at; https://drive.google.com/folderview?id=0B6IYWCgpPkt_eEhPSkthREhfZzA&amp;usp=sharing and are released publically under the Creative Commons Attribution-NonCommercial 4.0 International License.
 
